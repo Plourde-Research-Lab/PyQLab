@@ -43,12 +43,12 @@ markerHighKey = hash_pulse(np.ones(1, dtype=np.bool))
 
 markerWFLib = {TAZKey:np.zeros(1, dtype=np.bool), markerHighKey:np.ones(1, dtype=np.bool) }
 
-def get_channel_name(chanKey):
-    ''' Takes in a channel key and returns a channel name '''
+def get_channel_label(chanKey):
+    ''' Takes in a channel key and returns a channel label '''
     if type(chanKey) != tuple:
-        return chanKey.name
+        return chanKey.label
     else:
-        return "".join([chan.name for chan in chanKey])
+        return "".join([chan.label for chan in chanKey])
 
 
 def setup_awg_channels(logicalChannels):
@@ -58,11 +58,11 @@ def setup_awg_channels(logicalChannels):
         # dig in an grab the associated gate channel, too
         if not isinstance(chan, Channels.LogicalMarkerChannel):
             awgs.add(chan.physChan.gateChan.AWG)
-    return {awg.name:get_empty_channel_set(awg) for awg in awgs}
+    return {awg.label:get_empty_channel_set(awg) for awg in awgs}
 
 
 def map_logical_to_physical(linkLists, wfLib):
-    physicalChannels = {chan: channelLib[get_channel_name(chan)].physChan.name for chan in linkLists.keys()}
+    physicalChannels = {chan: channelLib[get_channel_label(chan)].physChan.label for chan in linkLists.keys()}
     awgData = setup_awg_channels(linkLists.keys())
 
     for chan in linkLists.keys():
@@ -95,7 +95,7 @@ def compile_to_hardware(seqs, fileName=None, suffix='', alignMode="right", nbrRe
 
     #Add the slave trigger
     #TODO: only add to slave devices
-    # linkLists[channelLib['slaveTrig']], wfLib[channelLib['slaveTrig']] = PatternUtils.slave_trigger(len(seqs))
+    linkLists[channelLib['slaveTrig']], wfLib[channelLib['slaveTrig']] = PatternUtils.slave_trigger(len(seqs))
 
     # map logical to physical channels
     awgData = map_logical_to_physical(linkLists, wfLib)
@@ -124,7 +124,7 @@ def compile_to_hardware(seqs, fileName=None, suffix='', alignMode="right", nbrRe
 
                     # add gate pulses on the marker channel
                     # note that the marker may be on an entirely different AWG
-                    markerAwgName, markerKey = chanObj.gateChan.name.split('-')
+                    markerAwgName, markerKey = chanObj.gateChan.label.split('-')
                     markerKey = 'ch' + markerKey
                     markerAwg = awgData[markerAwgName]
                     genObj = chanObj.generator
@@ -167,7 +167,7 @@ def compile_to_hardware(seqs, fileName=None, suffix='', alignMode="right", nbrRe
             targetFolder = os.path.split(config.AWGDir + fileName)[0]
             if not os.path.exists(targetFolder):
                 os.mkdir(targetFolder)
-            fullFileName = config.AWGDir + fileName + '-' + awgName + suffix + instrumentLib[awgName].seqFileExt
+            fullFileName = os.path.normpath(os.path.join(config.AWGDir, fileName + '-' + awgName + suffix + instrumentLib[awgName].seqFileExt))
             if isinstance(instrumentLib[awgName], APS):
                 write_APS_file(awg, fullFileName, nbrRepeats)
             elif isinstance(instrumentLib[awgName], Tek5014):
