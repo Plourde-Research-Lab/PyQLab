@@ -58,8 +58,13 @@ class AgilentE8257D(MicrowaveSource):
     gateMinWidth = Float(100e-9)
     gateDelay = Float(-60e-9)
 
+class PhaseMatrixFSW0020(MicrowaveSource):
+    gateBuffer = Float(20e-9)
+    gateMinWidth = Float(100e-9)
+    gateDelay = Float(-60e-9)
+
 #List of possible sources for other views
-MicrowaveSourceList = [AgilentN5183A, AgilentE8257D, HolzworthHS9000, Labbrick, Labbrick64, RhodeSchwarzSMIQ03, HP8673B, HP8340B]
+MicrowaveSourceList = [AgilentN5183A, AgilentE8257D, HolzworthHS9000, Labbrick, Labbrick64, RhodeSchwarzSMIQ03, HP8673B, HP8340B, PhaseMatrixFSW0020]
 
 if __name__ == "__main__":
     from MicrowaveSources import AgilentN5183A
