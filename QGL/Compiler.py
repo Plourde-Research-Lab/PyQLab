@@ -302,13 +302,10 @@ def compress_wfLib(seqs, wfLib):
 def find_unique_channels(seq):
     channels = set([])
     for step in seq:
-        if isinstance(step, PulseSequencer.Pulse):
-            if isinstance(step.qubits, Channels.Channel):
-                channels |= set([step.qubits])
-            else:
-                channels |= set(step.qubits)
+        if isinstance(step, (PulseSequencer.Pulse, PulseSequencer.CompositePulse)):
+            channels |= set([step.qubits])
         else:
-            channels |= set(step.pulses.keys())
+            channels |= set(step.qubits)
     return channels
 
 def normalize(seq, channels=None):
@@ -336,20 +333,23 @@ class LLElement(object):
     IQ LL elements for quadrature mod channels.
     '''
     def __init__(self, pulse=None):
-        self.repeat = 1
-
         if pulse is None:
             self.key = None
             self.length = 0
             self.phase = 0
             self.frameChange = 0
             self.isTimeAmp = False
+            self.repeat = 1
         else:
             self.key = hash_pulse(pulse.shape)
             self.length = pulse.length
             self.phase = pulse.phase
             self.frameChange = pulse.frameChange
             self.isTimeAmp = pulse.isTimeAmp
+            if pulse.repeat:
+                self.repeat = pulse.repeat
+            else:
+                self.repeat = 1
     
     @property
     def hasMarker(self):
