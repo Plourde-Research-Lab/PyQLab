@@ -40,6 +40,16 @@ class DigitalHomodyne(MeasFilter):
     recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
     saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
 
+class NaiveIntegrator(MeasFilter):
+    boxCarStart = Int(0).tag(desc='The start index of the integration window in pts.')
+    boxCarStop = Int(0).tag(desc='The stop index of the integration window in pts.')
+    IFfreq = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
+    bandwidth = Float(5e6).tag(desc='Low-pass filter bandwidth')
+    samplingRate = Float(250e6).tag(desc='The sampling rate of the digitizer.')
+    filterFilePath = Str('').tag(desc='Path to a .mat file containing the measurement filter and bias')
+    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
+    saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
+
 # ignore the difference between DigitalHomodyneSS and DigitalHomodyne
 class DigitalHomodyneSS(DigitalHomodyne):
     pass
@@ -112,7 +122,7 @@ class MeasFilterLibrary(Atom):
             return {"filterDict":{label:filt for label,filt in self.filterDict.items()}}
 
 
-measFilterList = [DigitalHomodyne, Correlator, StateComparator, DigitalHomodyneSS]
+measFilterList = [DigitalHomodyne, NaiveIntegrator, Correlator, StateComparator, DigitalHomodyneSS]
 
 if __name__ == "__main__":
 

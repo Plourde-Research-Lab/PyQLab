@@ -109,15 +109,15 @@ class Attenuation(PointsSweep):
     channel = Enum(1, 2, 3).tag(desc='Which channel to sweep')
     instr = Str()
 
-class AttenuationSU(PointsSweep):
-    label = Str(default='Attenuation (dB)')
-    instr = Str()
+#class AttenuationSU(PointsSweep):
+#    label = Str(default='Attenuation (dB)')
+#    instr = Str()
 
 class DC(PointsSweep):
     label = Str(default='DC')
     instr = Str()
 
-newSweepClasses = [Power, Frequency, HeterodyneFrequency, AttenuationSU, Attenuation, SegmentNum, SegmentNumWithCals, AWGChannel, AWGSequence, DC, Repeat]
+newSweepClasses = [Power, Frequency, HeterodyneFrequency, Attenuation, SegmentNum, SegmentNumWithCals, AWGChannel, AWGSequence, DC, Repeat]
 
 class SweepLibrary(Atom):
     sweepDict = Coerced(dict)
