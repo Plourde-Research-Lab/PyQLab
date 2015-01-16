@@ -47,6 +47,12 @@ class RhodeSchwarzSMIQ03(MicrowaveSource):
     gateMinWidth = Float(100e-9)
     gateDelay = Float(-60e-9)
 
+class BNC845M(MicrowaveSource):
+    refSource = Enum("Internal" , "External").tag(desc="Source of 10MHz ref.")
+    gateBuffer = Float(20e-9)
+    gateMinWidth = Float(100e-9)
+    gateDelay = Float(-60e-9)
+
 class HP8673B(MicrowaveSource):
     pass
 
@@ -64,7 +70,9 @@ class PhaseMatrixFSW0020(MicrowaveSource):
     gateDelay = Float(-60e-9)
 
 #List of possible sources for other views
+
 MicrowaveSourceList = [AgilentN5183A, AgilentE8257D, HolzworthHS9000, Labbrick, Labbrick64, RhodeSchwarzSMIQ03, HP8673B, HP8340B, PhaseMatrixFSW0020]
+
 
 if __name__ == "__main__":
     from MicrowaveSources import AgilentN5183A

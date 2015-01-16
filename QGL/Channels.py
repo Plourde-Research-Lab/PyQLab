@@ -100,6 +100,11 @@ class LogicalChannel(Channel):
     physChan = Instance((unicode,PhysicalChannel))
     AWG = Property()
 
+    def __init__(self, **kwargs):
+        super(LogicalChannel, self).__init__(**kwargs)
+        if self.physChan is None:
+            self.physChan = PhysicalChannel(label=kwargs['label']+'-phys')
+
     def _get_AWG(self):
         return self.physChan.AWG
 
@@ -107,6 +112,8 @@ class PhysicalMarkerChannel(PhysicalChannel):
     '''
     An digital output channel on an AWG.
     '''
+    gateBuffer = Float(0.0).tag(desc="How much extra time should be added onto the beginning of a gating pulse")
+    gateMinWidth = Float(0.0).tag(desc="The minimum marker pulse width")
         
 class PhysicalQuadratureChannel(PhysicalChannel):
     '''
@@ -115,7 +122,6 @@ class PhysicalQuadratureChannel(PhysicalChannel):
     IChannel = Str()
     QChannel = Str()
     #During initilization we may just have a string reference to the channel
-    gateChan = Instance((unicode, PhysicalMarkerChannel))
     ampFactor = Float(1.0)
     phaseSkew = Float(0.0)
     SSBFreq = Float(0.0)
@@ -140,11 +146,12 @@ class Qubit(LogicalChannel):
     The main class for generating qubit pulses.  Effectively a logical "QuadratureChannel".
     '''
     pulseParams = Dict(default={'length':20e-9, 'piAmp':1.0, 'pi2Amp':0.5, 'shapeFun':PulseShapes.gaussian, 'buffer':0.0, 'cutoff':2, 'dragScaling':0, 'sigma':5e-9})
+    gateChan = Instance((unicode, LogicalMarkerChannel))
 
     def __init__(self, **kwargs):
         super(Qubit, self).__init__(**kwargs)
-        if self.physChan is None:
-            self.physChan = PhysicalQuadratureChannel(label=kwargs['label']+'-phys')
+        if self.gateChan is None:
+            self.gateChan = LogicalMarkerChannel(label=kwargs['label']+'-gate')
 
 class Measurement(LogicalChannel):
     '''
@@ -155,21 +162,26 @@ class Measurement(LogicalChannel):
     measType = Enum('autodyne','homodyne').tag(desc='Type of measurment (autodyne, homodyne)')
     autodyneFreq = Float()
     pulseParams = Dict(default={'length':100e-9, 'amp':1.0, 'shapeFun':PulseShapes.tanh, 'buffer':0.0, 'cutoff':2, 'sigma':1e-9})
+    gateChan = Instance((unicode, LogicalMarkerChannel))
 
+    def __init__(self, **kwargs):
+        super(Measurement, self).__init__(**kwargs)
+        if self.gateChan is None:
+            self.gateChan = LogicalMarkerChannel(label=kwargs['label']+'-gate')
 
 def QubitFactory(label, **kwargs):
     ''' Return a saved qubit channel or create a new one. '''
-    if Compiler.channelLib and label in Compiler.channelLib.channelDict and isinstance(Compiler.channelLib[label], Qubit):
+    if Compiler.channelLib and label in Compiler.channelLib and isinstance(Compiler.channelLib[label], Qubit):
         return Compiler.channelLib[label]
     else:
         return Qubit(label=label, **kwargs)
 
 def MeasFactory(label, measType='autodyne', **kwargs):
     ''' Return a saved measurment channel or create a new one. '''
-    if Compiler.channelLib and label in Compiler.channelLib.channelDict and isinstance(Compiler.channelLib[label], Measurement):
+    if Compiler.channelLib and label in Compiler.channelLib and isinstance(Compiler.channelLib[label], Measurement):
         return Compiler.channelLib[label]
     else:
-        return Measurement(label=label, measType = measType, **kwargs)
+        return Measurement(label=label, measType=measType, **kwargs)
 
 class ChannelLibrary(Atom):
     # channelDict = Dict(Str, Channel)
@@ -192,9 +204,31 @@ class ChannelLibrary(Atom):
         if self.libFile:
             self.fileWatcher = FileWatcher.LibraryFileWatcher(self.libFile, self.update_from_file)
 
-    #Overload [] to allow direct pulling of channel info
-    def __getitem__(self, chanLabel):
-        return self.channelDict[chanLabel]
+    #Dictionary methods
+    def __getitem__(self, key):
+        return self.channelDict[key]
+
+    def __setitem__(self, key, value):
+        self.channelDict[key] = value
+
+    def __delitem__(self, key):
+        del self.channelDict[key]
+
+    # def __len__(self):
+    #     return len(self.channelDict)
+
+    # def __iter__(self):
+    #     for x in self.channelDict:
+    #         yield x
+
+    def __contains__(self, key):
+        return key in self.channelDict
+
+    def keys(self):
+        return self.channelDict.keys()
+
+    def values(self):
+        return self.channelDict.values()
 
     def write_to_file(self):
         import JSONHelpers
@@ -216,13 +250,16 @@ class ChannelLibrary(Atom):
             try:
                 with open(self.libFile, 'r') as FID:
                     tmpLib = json.load(FID, cls=JSONHelpers.ChannelDecoder)
-                    if isinstance(tmpLib, ChannelLibrary):
-                        for chan in tmpLib.channelDict.values():
-                            if isinstance(chan, LogicalChannel):
-                                chan.physChan = tmpLib[chan.physChan] if chan.physChan in tmpLib.channelDict else None
-                            elif isinstance(chan, PhysicalQuadratureChannel):
-                                chan.gateChan = tmpLib[chan.gateChan] if chan.gateChan in tmpLib.channelDict else None
-                        self.channelDict.update(tmpLib.channelDict)
+                    if not isinstance(tmpLib, ChannelLibrary):
+                        raise ValueError('Failed to load channel library')
+
+                    # connect objects labeled by strings
+                    for chan in tmpLib.channelDict.values():
+                        if hasattr(chan, 'physChan'):
+                            chan.physChan = tmpLib[chan.physChan] if chan.physChan in tmpLib.channelDict else None
+                        if hasattr(chan, 'gateChan'):
+                            chan.gateChan = tmpLib[chan.gateChan] if chan.gateChan in tmpLib.channelDict else None
+                    self.channelDict.update(tmpLib.channelDict)
 
             except IOError:
                 print('No channel library found.')
@@ -235,7 +272,7 @@ class ChannelLibrary(Atom):
         Helps avoid both stale references from replacing whole channel objects (as in load_from_library)
         and the overhead of recreating everything.
         """
-        updateList = ['ampFactor', 'phaseSkew', 'SSBFreq', 'delay', 'pulseParams']
+        updateList = ['ampFactor', 'phaseSkew', 'SSBFreq', 'delay']
         if self.libFile:
             with open(self.libFile, 'r') as FID:
                 try:
@@ -245,17 +282,21 @@ class ChannelLibrary(Atom):
                     return
                 for chName, chParams in allParams.items():
                     if chName in self.channelDict:
-                        for paramName in updateList:
-                            if paramName in chParams:
-                                #Deal with unicode/string difference
-                                if paramName == 'pulseParams':
-                                    paramDict = {k.encode('ascii'):v for k,v in chParams['pulseParams'].items()}
-                                    shapeFunName = paramDict.pop('shapeFun', None)
-                                    if shapeFunName:
-                                        paramDict['shapeFun'] = getattr(PulseShapes, shapeFunName)
-                                    setattr(self.channelDict[chName], 'pulseParams', paramDict)
-                                else:
-                                    setattr(self.channelDict[chName], paramName, chParams[paramName])
+                        if 'pulseParams' in chParams.keys():
+                            paramDict = {k.encode('ascii'):v for k,v in chParams['pulseParams'].items()}
+                            shapeFunName = paramDict.pop('shapeFun', None)
+                            if shapeFunName:
+                                paramDict['shapeFun'] = getattr(PulseShapes, shapeFunName)
+                            self.channelDict[chName].pulseParams = paramDict
+                        if 'physChan' in chParams.keys():
+                            self.channelDict[chName].physChan = self.channelDict[chParams['physChan']] if chParams['physChan'] in self.channelDict else None
+                        if 'gateChan' in chParams.keys():
+                            self.channelDict[chName].gateChan = self.channelDict[chParams['gateChan']] if chParams['gateChan'] in self.channelDict else None
+                        # TODO: how do we follow changes to selected AWG or generator/source?
+                        
+                        for paramName in chParams:
+                            if paramName in updateList:
+                                setattr(self.channelDict[chName], paramName, chParams[paramName])
 
 
 NewLogicalChannelList = [Qubit, LogicalMarkerChannel, Measurement]

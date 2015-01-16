@@ -11,12 +11,11 @@ import json
 
 class MeasFilter(Atom):
     label = Str()
-    channel = Int(1)
     enabled = Bool(True)
     plotScope = Bool(False).tag(desc='Whether to show the raw data scope.')
     plotMode = Enum('amp/phase', 'real/imag', 'quad').tag(desc='Filtered data scope mode.')
-    childFilter = Str()
-    dependent = Bool(False).tag(desc='Whether this filter is a child of another filter.')
+    saved = Bool(True).tag(desc='Whether the filtered values should be saved to file.')
+    dataSource = Str().tag(desc="Where the measurement data is pushed from.")
 
     def json_encode(self, matlabCompatible=False):
         jsonDict = self.__getstate__()
@@ -24,31 +23,36 @@ class MeasFilter(Atom):
             jsonDict['filterType'] = self.__class__.__name__
             jsonDict.pop('enabled', None)
             jsonDict.pop('label', None)
+            import numpy as np
+            import base64
+            try:
+                jsonDict['kernel'] = base64.b64encode(eval(self.kernel))
+            except:
+                jsonDict['kernel'] = []
         else:
             jsonDict['x__class__'] = self.__class__.__name__
             jsonDict['x__module__'] = self.__class__.__module__
         return jsonDict
 
-class DigitalHomodyne(MeasFilter):
-    boxCarStart = Int(0).tag(desc='The start index of the integration window in pts.')
-    boxCarStop = Int(0).tag(desc='The stop index of the integration window in pts.')
+class RawStream(MeasFilter):
+    saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
+    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
+    channel = Str().tag(desc="The channel on the digitizer to pull data from.")
+
+class DigitalDemod(MeasFilter):
+    saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
+    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
     IFfreq = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
     bandwidth = Float(5e6).tag(desc='Low-pass filter bandwidth')
     samplingRate = Float(250e6).tag(desc='The sampling rate of the digitizer.')
     phase = Float(0.0).tag(desc='Phase rotation to apply in rad.')
-    filterFilePath = Str('').tag(desc='Path to a .mat file containing the measurement filter and bias')
-    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
-    saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
+    decimFactor1 = Int(1).tag(desc="First stage polyphase decimation (before multiplication with reference).")
+    decimFactor2 = Int(1).tag(desc="Second stage polyphase decimation (before IIR filter).")
+    decimFactor3 = Int(1).tag(desc="Third stage polyphase decimation (after IIR filter).")
 
-class NaiveIntegrator(MeasFilter):
-    boxCarStart = Int(0).tag(desc='The start index of the integration window in pts.')
-    boxCarStop = Int(0).tag(desc='The stop index of the integration window in pts.')
-    IFfreq = Float(10e6).tag(desc='The I.F. frequency for digital demodulation.')
-    bandwidth = Float(5e6).tag(desc='Low-pass filter bandwidth')
-    samplingRate = Float(250e6).tag(desc='The sampling rate of the digitizer.')
-    filterFilePath = Str('').tag(desc='Path to a .mat file containing the measurement filter and bias')
-    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
-    saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
+class KernelIntegration(MeasFilter):
+    kernel = Str('').tag(desc="Integration kernel vector.")
+    bias = Float(0.0).tag(desc="Bias after integration.")
 
 # ignore the difference between DigitalHomodyneSS and DigitalHomodyne
 class DigitalHomodyneSS(DigitalHomodyne):
@@ -74,6 +78,11 @@ class Correlator(MeasFilter):
 class StateComparator(MeasFilter):
     threshold = Float(0.0)
     integrationTime = Int(-1).tag(desc='Comparator integration time in decimated samples, use -1 for the entire record')
+
+class StreamSelector(MeasFilter):
+    stream = Str()
+    saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
+    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
 
 class MeasFilterLibrary(Atom):
     # filterDict = Dict(Str, MeasFilter)
@@ -122,7 +131,8 @@ class MeasFilterLibrary(Atom):
             return {"filterDict":{label:filt for label,filt in self.filterDict.items()}}
 
 
-measFilterList = [DigitalHomodyne, NaiveIntegrator, Correlator, StateComparator, DigitalHomodyneSS]
+measFilterList = [RawStream, DigitalDemod, KernelIntegration, Correlator, StateComparator, StreamSelector]
+
 
 if __name__ == "__main__":
 

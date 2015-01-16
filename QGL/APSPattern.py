@@ -21,8 +21,11 @@ import os
 import numpy as np
 from warnings import warn
 from itertools import chain, izip_longest
+import Compiler, ControlFlow
+import PulseSequencer
+from PatternUtils import hash_pulse, TAZKey
 from copy import copy, deepcopy
-import hashlib
+
 
 #Some constants
 ADDRESS_UNIT = 4 #everything is done in units of 4 timesteps
@@ -40,21 +43,16 @@ END_MINILL_BIT = 14;
 WAIT_TRIG_BIT = 13;
 TA_PAIR_BIT = 12;
 
-def hash_pulse(shape):
-    return hashlib.sha1(shape.tostring()).hexdigest()
-
-TAZKey = hash_pulse(np.zeros(1, dtype=np.complex))
-
 def preprocess_APS(miniLL, wfLib):
 	'''
-	Helper function to deal with LL elements less than minimum LL entry count  
+	Helper function to deal with LL elements less than minimum LL entry count
 	by trying to concatenate them into neighbouring entries
 	'''
 	newMiniLL = []
 	entryct = 0
 	while entryct < len(miniLL):
 		curEntry = miniLL[entryct]
-		if curEntry.length >= MIN_ENTRY_LENGTH:
+		if not isinstance(curEntry, Compiler.LLWaveform) or curEntry.length >= MIN_ENTRY_LENGTH:
 			newMiniLL.append(curEntry)
 			entryct += 1
 			continue
@@ -65,21 +63,21 @@ def preprocess_APS(miniLL, wfLib):
 			break
 		nextEntry = miniLL[entryct+1]
 		previousEntry = miniLL[entryct-1] if entryct > 0 else None
-		
+
 		#For short TA pairs we see if we can add them to the next waveform
 		if curEntry.key == TAZKey and not nextEntry.key == TAZKey:
-			#Concatenate the waveforms                
+			#Concatenate the waveforms
 			paddedWF = np.hstack((wfLib[curEntry.key]*np.ones(curEntry.length), wfLib[nextEntry.key]))
 			#Hash the result to generate a new unique key and add
-			newKey = hash(tuple(paddedWF))
+			newKey = hash_pulse(paddedWF)
 			wfLib[newKey] = paddedWF
 			nextEntry.key = newKey
 			nextEntry.length = wfLib[newKey].size
 			newMiniLL.append(nextEntry)
 			entryct += 2
-		
+
 		#For short pulses we see if we can steal some padding from the previous or next entry
-		elif previousEntry.key == TAZKey and previousEntry.length > 2*MIN_ENTRY_LENGTH:
+		elif isinstance(previousEntry, Compiler.LLWaveform) and previousEntry.key == TAZKey and previousEntry.length > 2*MIN_ENTRY_LENGTH:
 			padLength = MIN_ENTRY_LENGTH - curEntry.length
 			newMiniLL[-1].length -= padLength
 			#Concatenate the waveforms
@@ -90,14 +88,14 @@ def preprocess_APS(miniLL, wfLib):
 			else:
 				paddedWF = np.hstack((np.zeros(padLength, dtype=np.complex), wfLib[curEntry.key]))
 			#Hash the result to generate a new unique key and add
-			newKey = hash(tuple(paddedWF))
+			newKey = hash_pulse(paddedWF)
 			wfLib[newKey] = paddedWF
 			curEntry.key = newKey
 			curEntry.length = wfLib[newKey].size
 			newMiniLL.append(curEntry)
 			entryct += 1
 
-		elif nextEntry.key == TAZKey and nextEntry.length > 2*MIN_ENTRY_LENGTH:
+		elif isinstance(nextEntry, Compiler.LLWaveform) and nextEntry.key == TAZKey and nextEntry.length > 2*MIN_ENTRY_LENGTH:
 			padLength = MIN_ENTRY_LENGTH - curEntry.length
 			nextEntry.length -= padLength
 			#Concatenate the waveforms
@@ -108,7 +106,7 @@ def preprocess_APS(miniLL, wfLib):
 			else:
 				paddedWF = np.hstack((wfLib[curEntry.key], np.zeros(padLength, dtype=np.complex)))
 			#Hash the result to generate a new unique key and add
-			newKey = hash(tuple(paddedWF))
+			newKey = hash_pulse(paddedWF)
 			wfLib[newKey] = paddedWF
 			curEntry.key = newKey
 			curEntry.length = wfLib[newKey].size
@@ -119,7 +117,7 @@ def preprocess_APS(miniLL, wfLib):
 			warn("Unable to handle too short LL element, dropping.")
 			entryct += 1
 
-	#Update the miniLL 
+	#Update the miniLL
 	return newMiniLL
 
 def create_wf_vector(wfLib):
@@ -136,30 +134,30 @@ def create_wf_vector(wfLib):
 		#TA pairs need to be repeated ADDRESS_UNIT times
 		if wf.size == 1:
 			wf = wf.repeat(ADDRESS_UNIT)
-		#Ensure the wf is an integer number of ADDRESS_UNIT's 
+		#Ensure the wf is an integer number of ADDRESS_UNIT's
 		trim = wf.size%ADDRESS_UNIT
 		if trim:
 			wf = wf[:-trim]
 		assert idx + wf.size < MAX_WAVEFORM_PTS, 'Oops! You have exceeded the waveform memory of the APS'
 		wfVec[idx:idx+wf.size] = np.uint16(np.round(MAX_WAVEFORM_VALUE*wf))
 		offsets[key] = idx
-		idx += wf.size 
-					
-	#Trim the waveform 
-	wfVec = wfVec[0:idx] 
+		idx += wf.size
+
+	#Trim the waveform
+	wfVec = wfVec[0:idx]
 
 	return wfVec, offsets
 
 def calc_marker_delay(entry):
 	#The firmware cannot handle 0 delay markers so push out one clock cycle
-	if entry.markerDelay1 is not None:
+	if hasattr(entry, 'markerDelay1') and entry.markerDelay1 is not None:
 		if entry.markerDelay1 < ADDRESS_UNIT:
 			entry.markerDelay1 = ADDRESS_UNIT
 		markerDelay1 = entry.markerDelay1//ADDRESS_UNIT
 	else:
 		markerDelay1 = 0
 
-	if entry.markerDelay2 is not None:
+	if hasattr(entry, 'markerDelay2') and entry.markerDelay2 is not None:
 		if entry.markerDelay2 < ADDRESS_UNIT:
 			entry.markerDelay2 = ADDRESS_UNIT
 		markerDelay2 = entry.markerDelay2//ADDRESS_UNIT
@@ -168,6 +166,55 @@ def calc_marker_delay(entry):
 
 	return markerDelay1, markerDelay2
 
+class Instruction(object):
+	def __init__(self, addr=0, count=0, trig1=0, trig2=0, repeat=0):
+		self.addr = int(addr)
+		self.count = int(count)
+		self.trig1 = int(trig1)
+		self.trig2 = int(trig2)
+		self.repeat = int(repeat)
+
+	def __repr__(self):
+		return self.__str__()
+
+	def __str__(self):
+		return ("Instruction(" + str(self.addr) + ", " + str(self.count) + ", " +
+			    str(self.trig1) + ", " + str(self.trig2) + ", " + str(self.repeat) + ")")
+
+	@property
+	def start(self):
+		return self.repeat & (1 << START_MINILL_BIT)
+
+	@start.setter
+	def start(self, value):
+		self.repeat |= (value & 0x1) << START_MINILL_BIT
+
+	@property
+	def end(self):
+		return self.repeat & (1 << END_MINILL_BIT)
+
+	@end.setter
+	def end(self, value):
+		self.repeat |= (value & 0x1) << END_MINILL_BIT
+
+	@property
+	def wait(self):
+		return self.repeat & (1 << WAIT_TRIG_BIT)
+
+	@wait.setter
+	def wait(self, value):
+		self.repeat |= (value & 0x1) << WAIT_TRIG_BIT
+
+	@property
+	def TAPair(self):
+		return self.repeat & (1 << TA_PAIR_BIT)
+
+	@TAPair.setter
+	def TAPair(self, value):
+		self.repeat |= (value & 0x1) << TA_PAIR_BIT
+
+	def flatten(self):
+		return (self.addr << 16*4) | (self.count << 16*3) | (self.trig1 << 16*2) | (self.trig2 << 16*1) | self.repeat
 
 def create_LL_data(LLs, offsets, AWGName=''):
 	'''
@@ -175,32 +222,54 @@ def create_LL_data(LLs, offsets, AWGName=''):
 	keyed on the wf keys.
 	'''
 
-	#Preallocate the bank data and do some checking for miniLL lengths
+	# Do some checking on miniLL lengths
 	seqLengths = np.array([len(miniLL) for miniLL in LLs])
 	assert np.all(seqLengths >= MIN_LL_ENTRY_COUNT), 'Oops! mini LL''s needs to have at least two elements.'
 	assert np.all(seqLengths < MAX_LL_ENTRIES), 'Oops! mini LL''s cannot have length greater than {0}, you have {1} entries'.format(MAX_BANK_SIZE, len(miniLL))
-	numEntries = sum(seqLengths)
+
+	instructions = []
+	waitFlag = False
+	LLs, miniLLrepeat = unroll_loops(LLs)
+	for miniLL in LLs:
+		miniStart = True
+		for entry in miniLL:
+			if isinstance(entry, ControlFlow.ControlInstruction):
+				if entry.instruction == 'WAIT':
+					waitFlag = True
+					continue
+				elif entry.instruction == 'GOTO' and entry.target == LLs[0][0].label:
+					# can safely skip a goto with a target of the first instruction
+					continue
+				else:
+					warn("skipping instruction {0}".format(entry))
+			else: # waveform instructions
+				t1, t2 = calc_marker_delay(entry)
+				instr = Instruction(
+					addr = offsets[entry.key]//ADDRESS_UNIT,
+					count = entry.length//ADDRESS_UNIT - 1,
+					trig1 = t1,
+					trig2 = t2,
+					repeat = entry.repeat -1)
+				# set flags
+				instr.TAPair = entry.isTimeAmp
+				instr.wait = waitFlag
+				instr.start = miniStart
+				waitFlag = False
+				miniStart = False
+				instructions.append(instr)
+		instructions[-1].end = True
+
+	# convert to LLData structure
+	numEntries = len(instructions)
 	LLData = {label: np.zeros(numEntries, dtype=np.uint16) for label in ['addr','count', 'trigger1', 'trigger2', 'repeat']}
+	for ct in range(numEntries):
+		LLData['addr'][ct] = instructions[ct].addr
+		LLData['count'][ct] = instructions[ct].count
+		LLData['trigger1'][ct] = instructions[ct].trig1
+		LLData['trigger2'][ct] = instructions[ct].trig2
+		LLData['repeat'][ct] = instructions[ct].repeat
 
-	#Loop over all entries
-	TAPairEntries = []
-	for ct, entry in enumerate(chain.from_iterable(LLs)):
-		LLData['addr'][ct] = offsets[entry.key]//ADDRESS_UNIT
-		LLData['count'][ct] = entry.length//ADDRESS_UNIT-1
-		LLData['trigger1'][ct], LLData['trigger2'][ct] = calc_marker_delay(entry)
-		LLData['repeat'][ct] = entry.repeat-1
-		if entry.isTimeAmp:
-			TAPairEntries.append(ct)
-
-	#Add in the miniLL start/stop and TA pair flags on the upper bits of the repeat entries
-	startPts = np.hstack((0, np.cumsum(seqLengths[:-1])))
-	endPts = np.cumsum(seqLengths)-1
-	LLData['repeat'][startPts] += 2**START_MINILL_BIT + 2**WAIT_TRIG_BIT
-	LLData['repeat'][endPts] += 2**END_MINILL_BIT
-	LLData['repeat'][TAPairEntries] += 2**TA_PAIR_BIT
-	
 	#Check streaming requirements
-	numEntries = np.uint16(LLData['addr'].size)
 	if numEntries > MAX_LL_ENTRIES:
 		print('Streaming will be necessary for {}'.format(AWGName))
 		#Get the length of the longest LL
@@ -211,21 +280,23 @@ def create_LL_data(LLs, offsets, AWGName=''):
 		maxRepInterval = timePerEntry*llLengths[1]
 		print('Maximum suggested sequence rate is {:.3f}ms, or for 100us rep. rate this would be {} miniLL repeats'.format(1e3*maxRepInterval, int(maxRepInterval/100e-6)))
 
-	return LLData, numEntries
+	return LLData, numEntries, miniLLrepeat
 
 def merge_APS_markerData(IQLL, markerLL, markerNum):
 	'''
 	Helper function to merge two marker channels into an IQ channel.
 	'''
+	if len(markerLL) == 0:
+		return
 
 	markerAttr = 'markerDelay' + str(markerNum)
 
 	# expand link lists to the same length (copying first element of shorter one)
 	for miniLL_IQ, miniLL_m in izip_longest(IQLL, markerLL):
 		if not miniLL_IQ:
-			IQLL.append(deepcopy(IQLL[0]))
+			IQLL.append([ControlFlow.Wait(), Compiler.create_padding_LL(MIN_ENTRY_LENGTH), Compiler.create_padding_LL(MIN_ENTRY_LENGTH)])
 		if not miniLL_m:
-			markerLL.append(deepcopy(markerLL[0]))
+			markerLL.append([Compiler.create_padding_LL(MIN_ENTRY_LENGTH)])
 
 	#Step through the all the miniLL's together
 	for miniLL_IQ, miniLL_m in zip(IQLL, markerLL):
@@ -234,38 +305,63 @@ def merge_APS_markerData(IQLL, markerLL, markerNum):
 
 		#Find the switching points of the marker channels
 		switchPts = []
-		curIndex = 0
-		for curEntry, nextEntry in zip(miniLL_m[:-1], miniLL_m[1:]):
-			curIndex += curEntry.totLength
-			if curEntry.key != nextEntry.key:
-				switchPts.append(curIndex)
-				
+		prevKey = TAZKey
+		t = 0
+		for entry in miniLL_m:
+			if hasattr(entry, 'key') and prevKey != entry.key:
+				switchPts.append(t)
+				prevKey = entry.key
+			t += entry.totLength
+
+		# Push on an extra switch point if we have an odd number of switches (to maintain state)
+		if len(switchPts) % 2 == 1:
+			switchPts.append(t)
+
 		#Assume switch pts seperated by 1 point are single trigger blips
 		blipPts = (np.diff(switchPts) == 1).nonzero()[0]
 		for pt in blipPts[::-1]:
 			del switchPts[pt+1]
 		#Ensure the IQ LL is long enough to support the blips
-		if switchPts:
-			if max(switchPts) >= timePts[-1]:
-				assert miniLL_IQ[-1].isTimeAmp
-				miniLL_IQ[-1].length += max(switchPts) - timePts[-1] + 8 
+		if switchPts and max(switchPts) >= timePts[-1]:
+			dt = max(switchPts) - timePts[-1]
+			if hasattr(miniLL_IQ[-1], 'isTimeAmp') and miniLL_IQ[-1].isTimeAmp:
+				miniLL_IQ[-1].length += dt + 4
+			else:
+				# inject before any control flow statements at the end of the sequence
+				idx = len(miniLL_IQ)
+				while idx > 0 and isinstance(miniLL_IQ[idx-1], ControlFlow.ControlInstruction):
+					idx -=1
+				miniLL_IQ.insert(idx, Compiler.create_padding_LL(max(dt+4, MIN_ENTRY_LENGTH)))
 
 		#Now map onto linklist elements
 		curIQIdx = 0
 		trigQueue = []
 		for switchPt in switchPts:
-			#If the trigger count is too long we need to move to the next IQ entry
-			while ((switchPt - timePts[curIQIdx]) > ADDRESS_UNIT * MAX_TRIGGER_COUNT) or (len(trigQueue) > 1):
+			# skip if:
+			#   1) control-flow instruction
+			#   2) the trigger count is too long
+			#   3) the previous trigger pulse entends into the current entry
+			while (isinstance(miniLL_IQ[curIQIdx], ControlFlow.ControlInstruction) or
+				(switchPt - timePts[curIQIdx]) > (ADDRESS_UNIT * MAX_TRIGGER_COUNT) or
+				len(trigQueue) > 1):
 				# update the trigger queue, dropping triggers that have played
 				trigQueue = [t - miniLL_IQ[curIQIdx].length for t in trigQueue]
 				trigQueue = [t for t in trigQueue if t >= 0]
 				curIQIdx += 1
+				# add padding pulses if needed
+				if curIQIdx >= len(miniLL_IQ):
+					pad = max(MIN_ENTRY_LENGTH, min(trigQueue, 0))
+					miniLL_IQ.append(Compiler.create_padding_LL(pad))
 			#Push on the trigger count
+
 			#If are switch point is before the start of the LL entry then we are in trouble...
-			if switchPt - timePts[curIQIdx] <= 0:
+			if switchPt - timePts[curIQIdx] < 0:
 				#See if the previous entry was a TA pair and whether we can split it
 				needToShift = switchPt - timePts[curIQIdx-1]
-				if miniLL_IQ[curIQIdx-1].isTimeAmp and miniLL_IQ[curIQIdx-1].length > needToShift + MIN_ENTRY_LENGTH:
+				if isinstance(miniLL_IQ[curIQIdx-1], Compiler.LLWaveform) and \
+					miniLL_IQ[curIQIdx-1].isTimeAmp and \
+					miniLL_IQ[curIQIdx-1].length > (needToShift + MIN_ENTRY_LENGTH):
+
 					miniLL_IQ.insert(curIQIdx, deepcopy(miniLL_IQ[curIQIdx-1]))
 					miniLL_IQ[curIQIdx-1].length = needToShift-ADDRESS_UNIT
 					miniLL_IQ[curIQIdx].length -= needToShift-ADDRESS_UNIT
@@ -277,6 +373,7 @@ def merge_APS_markerData(IQLL, markerLL, markerNum):
 				else:
 					setattr(miniLL_IQ[curIQIdx], markerAttr, 0)
 					print("Had to push marker blip out to start of next entry.")
+
 			else:
 				setattr(miniLL_IQ[curIQIdx], markerAttr, switchPt - timePts[curIQIdx])
 				trigQueue.insert(0, switchPt - timePts[curIQIdx])
@@ -290,6 +387,56 @@ def merge_APS_markerData(IQLL, markerLL, markerNum):
 		for entry in miniLL_IQ:
 			if not hasattr(entry, markerAttr):
 				setattr(entry, markerAttr, None)
+
+def unroll_loops(LLs):
+	'''
+	Unrolls repeated sequences in place, unless the sequence can be unrolled with a miniLL repeat
+	attribute. Returns the (potentially) modified sequence and the miniLL repeat value.
+	'''
+
+	# if all sequences start and end with LOAD and REPEAT, respectively, and all load values
+	# are the same, we can just drop these instructions and return a miniLLrepeat value
+	if isinstance(LLs[0][0], ControlFlow.ControlInstruction) and LLs[0][0].instruction == 'LOAD':
+		repeats = LLs[0][0].value
+	else:
+		repeats = -1
+
+	simpleUnroll = True
+	for seq in LLs:
+		if not isinstance(seq[0], ControlFlow.ControlInstruction) or \
+			not isinstance(seq[-1], ControlFlow.ControlInstruction) or \
+			seq[0].instruction != 'LOAD' or \
+			seq[-1].instruction != 'REPEAT' or \
+			seq[0].value != repeats or \
+			seq[-1].target != seq[1].label:
+			simpleUnroll = False
+
+	if simpleUnroll:
+		return LLs, repeats
+
+	# otherwise, we need to manually unroll any repeated section
+	instructions = []
+	for seq in LLs:
+		symbols = {}
+		ct = 0
+		while ct < len(seq):
+			entry = seq[ct]
+			# fill symbol table
+			if isinstance(entry, (ControlFlow.ControlInstruction, PulseSequencer.PulseBlock)) and \
+				entry.label and entry.label not in symbols:
+				symbols[entry.label] = ct
+			# look for the end of a repeated block
+			if isinstance(entry, ControlFlow.ControlInstruction) and entry.instruction == 'REPEAT':
+				repeatedBlock = seq[symbols[entry.target]:ct]
+				numRepeats = seq[symbols[entry.target]-1].value
+				# unroll the block (dropping the LOAD and REPEAT)
+				seq = seq[:symbols[entry.target]-1] + repeatedBlock*numRepeats + seq[ct+1:]
+				# advance the count (minus 2 for dropped instructions)
+				ct += (numRepeats-1) * len(repeatedBlock) - 2
+			ct += 1
+		# add unrolled sequence to instruction list
+		instructions.append(seq)
+	return instructions, 0
 
 def write_APS_file(awgData, fileName, miniLLRepeat=1):
 	'''
@@ -305,19 +452,20 @@ def write_APS_file(awgData, fileName, miniLLRepeat=1):
 	merge_APS_markerData(LLs12, awgData['ch2m1']['linkList'], 2)
 	merge_APS_markerData(LLs34, awgData['ch3m1']['linkList'], 1)
 	merge_APS_markerData(LLs34, awgData['ch4m1']['linkList'], 2)
-	
+
 	#Open the HDF5 file
 	if os.path.isfile(fileName):
 		os.remove(fileName)
-	with h5py.File(fileName, 'w') as FID:  
-	
+	with h5py.File(fileName, 'w') as FID:
+
 		#List of which channels we have data for
 		#TODO: actually handle incomplete channel data
-		channelDataFor = [1,2,3,4]
-		FID['/'].attrs['Version'] = 2.0
+		channelDataFor = [1,2] if LLs12 else []
+		channelDataFor += [3,4] if LLs34 else []
+		FID['/'].attrs['Version'] = 2.1
 		FID['/'].attrs['channelDataFor'] = np.uint16(channelDataFor)
 		FID['/'].attrs['miniLLRepeat'] = np.uint16(miniLLRepeat - 1)
-   
+
 		#Create the waveform vectors
 		wfInfo = []
 		for wfLib in (awgData['ch12']['wfLib'], awgData['ch34']['wfLib']):
@@ -325,6 +473,7 @@ def write_APS_file(awgData, fileName, miniLLRepeat=1):
 			wfInfo.append(create_wf_vector({key:wf.imag for key,wf in wfLib.items()}))
 
 		LLData = [LLs12, LLs34]
+		repeats = [0, 0]
 		#Create the groups and datasets
 		for chanct in range(4):
 			chanStr = '/chan_{0}'.format(chanct+1)
@@ -333,18 +482,19 @@ def write_APS_file(awgData, fileName, miniLLRepeat=1):
 			#Write the waveformLib to file
 			FID.create_dataset('{0}/waveformLib'.format(chanStr), data=wfInfo[chanct][0])
 
-			#For A channels (1 & 3) we write link list data
-			if np.mod(chanct,2) == 0:
-				chanGroup.attrs['isLinkListData'] = np.uint8(1)
+			#For A channels (1 & 3) we write link list data if we actually have any
+			if (np.mod(chanct,2) == 0) and LLData[chanct//2]:
 				groupStr = chanStr+'/linkListData'
 				LLGroup = FID.create_group(groupStr)
-				LLDataVecs, numEntries = create_LL_data(LLData[chanct//2], wfInfo[chanct][1], os.path.basename(fileName))
+				LLDataVecs, numEntries, repeats[chanct//2] = create_LL_data(LLData[chanct//2], wfInfo[chanct][1], os.path.basename(fileName))
 				LLGroup.attrs['length'] = numEntries
 				for key,dataVec in LLDataVecs.items():
 					FID.create_dataset(groupStr+'/' + key, data=dataVec)
 			else:
 				chanGroup.attrs['isLinkListData'] = np.uint8(0)
-
+		if repeats != [0, 0]:
+			assert repeats[0] == repeats[1], 'Failed to unroll sequence'
+			FID['/'].attrs['miniLLRepeat'] = np.uint16(miniLLRepeat * repeats[0] - 1)
 
 def read_APS_file(fileName):
 	'''
@@ -356,7 +506,7 @@ def read_APS_file(fileName):
 	END_MINILL_MASK = 2**END_MINILL_BIT
 	TA_PAIR_MASK = 2**TA_PAIR_BIT
 	REPEAT_MASK = 2**10-1
-	
+
 	chanStrs = ['ch1','ch2', 'ch3', 'ch4']
 	chanStrs2 = ['chan_1', 'chan_2', 'chan_3', 'chan_4']
 	mrkStrs = ['ch1m1', 'ch2m1', 'ch3m1', 'ch4m1']
@@ -366,53 +516,55 @@ def read_APS_file(fileName):
 			#If we're in IQ mode then the Q channel gets its linkListData from the I channel
 			if FID[chanStr].attrs['isIQMode']:
 				tmpChan = 2*(chanct//2)
-				curLLData = FID[chanStrs2[tmpChan]]['linkListData']
+				curLLData = FID[chanStrs2[tmpChan]]['linkListData'] if "linkListData" in FID[chanStrs2[tmpChan]] else []
 			else:
-				curLLData = FID[chanStr]['linkListData']
-			#Pull out the LL data
-			#Matlab puts our column vectors so need to flatten too
-			tmpAddr = curLLData['addr'].value.flatten()
-			tmpCount = curLLData['count'].value.flatten()
-			tmpRepeat = curLLData['repeat'].value.flatten()
-			tmpTrigger1 = curLLData['trigger1'].value.flatten()
-			tmpTrigger2 = curLLData['trigger2'].value.flatten()
-			numEntries = curLLData.attrs['length']
-   
-			#Pull out and scale the waveform data
-			wfLib =(1.0/MAX_WAVEFORM_VALUE)*FID[chanStr]['waveformLib'].value.flatten()
+				curLLData = FID[chanStr]['linkListData'] if "linkListData" in FID[chanStrs2[tmpChan]] else []
 
-			#Initialize the lists of sequences
-			AWGData[chanStrs[chanct]] = []
-			AWGData[mrkStrs[chanct]] = []
+			if curLLData:
+				#Pull out the LL data
+				#Matlab puts our column vectors so need to flatten too
+				tmpAddr = curLLData['addr'].value.flatten()
+				tmpCount = curLLData['count'].value.flatten()
+				tmpRepeat = curLLData['repeat'].value.flatten()
+				tmpTrigger1 = curLLData['trigger1'].value.flatten()
+				tmpTrigger2 = curLLData['trigger2'].value.flatten()
+				numEntries = curLLData.attrs['length']
 
-			#Loop over LL entries
-			for entryct in range(numEntries):
-				#If we are starting a new entry push back an empty array
-				if START_MINILL_MASK & tmpRepeat[entryct]:
-					AWGData[chanStrs[chanct]].append(np.array([], dtype=np.float64))
-					triggerDelays = []
-					
-				#Record the trigger delays
-				if np.mod(chanct,2) == 0:
-					if tmpTrigger1[entryct] > 0:
-						triggerDelays.append(AWGData[chanStrs[chanct]][-1].size + ADDRESS_UNIT*tmpTrigger1[entryct])
-				else:
-					if tmpTrigger2[entryct] > 0:
-						triggerDelays.append(AWGData[chanStrs[chanct]][-1].size + ADDRESS_UNIT*tmpTrigger2[entryct])
+				#Pull out and scale the waveform data
+				wfLib =(1.0/MAX_WAVEFORM_VALUE)*FID[chanStr]['waveformLib'].value.flatten()
 
-				#If it is a TA pair or regular pulse
-				curRepeat = (tmpRepeat[entryct] & REPEAT_MASK)+1
-				if TA_PAIR_MASK & tmpRepeat[entryct]:
-					AWGData[chanStrs[chanct]][-1] = np.hstack((AWGData[chanStrs[chanct]][-1], 
-													np.tile(wfLib[tmpAddr[entryct]*ADDRESS_UNIT:tmpAddr[entryct]*ADDRESS_UNIT+4], curRepeat*(tmpCount[entryct]+1))))
-				else:
-					AWGData[chanStrs[chanct]][-1] = np.hstack((AWGData[chanStrs[chanct]][-1], 
-													np.tile(wfLib[tmpAddr[entryct]*ADDRESS_UNIT:tmpAddr[entryct]*ADDRESS_UNIT+ADDRESS_UNIT*(tmpCount[entryct]+1)], curRepeat)))
-				#Add the trigger pulse
-				if END_MINILL_MASK & tmpRepeat[entryct]:
-					triggerSeq = np.zeros(AWGData[chanStrs[chanct]][-1].size, dtype=np.bool)
-					triggerSeq[triggerDelays] = True
-					AWGData[mrkStrs[chanct]].append(triggerSeq)
+				#Initialize the lists of sequences
+				AWGData[chanStrs[chanct]] = []
+				AWGData[mrkStrs[chanct]] = []
+
+				#Loop over LL entries
+				for entryct in range(numEntries):
+					#If we are starting a new entry push back an empty array
+					if START_MINILL_MASK & tmpRepeat[entryct]:
+						AWGData[chanStrs[chanct]].append(np.array([], dtype=np.float64))
+						triggerDelays = []
+
+					#Record the trigger delays
+					if np.mod(chanct,2) == 0:
+						if tmpTrigger1[entryct] > 0:
+							triggerDelays.append(AWGData[chanStrs[chanct]][-1].size + ADDRESS_UNIT*tmpTrigger1[entryct])
+					else:
+						if tmpTrigger2[entryct] > 0:
+							triggerDelays.append(AWGData[chanStrs[chanct]][-1].size + ADDRESS_UNIT*tmpTrigger2[entryct])
+
+					#If it is a TA pair or regular pulse
+					curRepeat = (tmpRepeat[entryct] & REPEAT_MASK)+1
+					if TA_PAIR_MASK & tmpRepeat[entryct]:
+						AWGData[chanStrs[chanct]][-1] = np.hstack((AWGData[chanStrs[chanct]][-1],
+														np.tile(wfLib[tmpAddr[entryct]*ADDRESS_UNIT:tmpAddr[entryct]*ADDRESS_UNIT+4], curRepeat*(tmpCount[entryct]+1))))
+					else:
+						AWGData[chanStrs[chanct]][-1] = np.hstack((AWGData[chanStrs[chanct]][-1],
+														np.tile(wfLib[tmpAddr[entryct]*ADDRESS_UNIT:tmpAddr[entryct]*ADDRESS_UNIT+ADDRESS_UNIT*(tmpCount[entryct]+1)], curRepeat)))
+					#Add the trigger pulse
+					if END_MINILL_MASK & tmpRepeat[entryct]:
+						triggerSeq = np.zeros(AWGData[chanStrs[chanct]][-1].size, dtype=np.bool)
+						triggerSeq[triggerDelays] = True
+						AWGData[mrkStrs[chanct]].append(triggerSeq)
 	return AWGData
 
 

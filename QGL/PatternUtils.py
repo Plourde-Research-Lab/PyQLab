@@ -14,28 +14,52 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import numpy as np
-import Compiler
 from warnings import warn
-from APSPattern import MIN_ENTRY_LENGTH
-from PulseSequencer import Pulse
+from PulseSequencer import Pulse, TAPulse
+from PulsePrimitives import BLANK
+import ControlFlow, Compiler
 from math import pi
+import hashlib
+
+def hash_pulse(shape):
+    return hashlib.sha1(shape.tostring()).hexdigest()
+
+TAZKey = hash_pulse(np.zeros(1, dtype=np.complex))
+markerHighKey = hash_pulse(np.ones(1, dtype=np.bool))
 
 def delay(linkList, delay, samplingRate):
     '''
-    Delays a mini link list by the given delay. Postives delays
-    shift right, negative delays shift left.
+    Delays a mini link list by the given amount.
     '''
-    # we assume that link lists are constructed with a padding element at the beginning that can be adjusted
-    assert linkList[0][0].isZero, 'Delay error: link list does not start with a padding element'
     sampShift = int(round(delay * samplingRate))
+    if sampShift <= 0: # no need to inject zero delays
+        return
     for miniLL in linkList:
-        miniLL[0].length += sampShift
-        assert miniLL[0].length > 0, 'Delay error: Negative length padding element after delay.'
+        # loop through and look for WAIT instructions
+        # use while loop because len(miniLL) will change as we inject delays
+        ct = 0
+        while ct < len(miniLL):
+            if miniLL[ct] == ControlFlow.Wait() or miniLL[ct] == ControlFlow.Sync():
+                miniLL.insert(ct+1, Compiler.create_padding_LL(sampShift))
+            ct += 1
+
+def normalize_delays(delays):
+    '''
+    Normalizes a dictionary of channel delays. Postives delays shift right, negative delays shift left.
+    Since we cannot delay by a negative amount in hardware, shift all delays until they are positive.
+    Takes in a dict of channel:delay pairs and returns a normalized copy of the same.
+    '''
+    min_delay = min(delays.values())
+    out = dict(delays) # copy before modifying
+    if min_delay < 0:
+        for chan in delays.keys():
+            out[chan] += -min_delay
+    return out
 
 def apply_SSB(linkList, wfLib, SSBFreq, samplingRate):
     #Negative because of negative frequency qubits
     phaseStep = -2*pi*SSBFreq/samplingRate
-        
+
     #Bits of phase precision
     #Choose usual DAC vertical precision arbirarily
     phasePrecision = 2**14
@@ -52,8 +76,8 @@ def apply_SSB(linkList, wfLib, SSBFreq, samplingRate):
     for miniLL in linkList:
         curFrame = 0.0
         for entry in miniLL:
-            #If it's a zero then just adjust the frame and move on 
-            if entry.key == Compiler.TAZKey: 
+            #If it's a zero then just adjust the frame and move on
+            if not hasattr(entry, 'key') or entry.key == TAZKey:
                 curFrame += phaseStep*entry.length
                 continue
             # expand time-amplitude pulses in-place
@@ -70,7 +94,7 @@ def apply_SSB(linkList, wfLib, SSBFreq, samplingRate):
             else:
                 phaseRamp = phaseStep*np.arange(0.5, shape.size)
                 shape *= np.exp(1j*(truncPhase + phaseRamp))
-                shapeHash = Compiler.hash_pulse(shape)
+                shapeHash = hash_pulse(shape)
                 if shapeHash not in wfLib:
                     wfLib[shapeHash] = shape
                 pulseDict[pulseTuple] = shapeHash
@@ -94,123 +118,116 @@ def correctMixer(wfLib, T):
         iqWF = np.vstack((np.real(v), np.imag(v)))
         wfLib[k] = T[0,:].dot(iqWF) + 1j*T[1,:].dot(iqWF)
 
-def split_multiple_triggers():
-	'''
-	Split entries with multiple triggers into two entries.
-	'''
-	pass
-
-def create_gate_seqs(linkList, gateBuffer=0, gateMinWidth=0, samplingRate=1.2e9):
+def add_gate_pulses(seqs):
     '''
-    Helper function that takes a set of analog channel LL and creates a LL with appropriate 
-    blanking on a marker channel. 
+    add gating pulses to Qubit pulses
     '''
+    for seq in seqs:
+        for ct in range(len(seq)):
+            if hasattr(seq[ct], 'pulses'):
+                for chan, pulse in seq[ct].pulses.items():
+                    if has_gate(chan) and not pulse.isZero and not (chan.gateChan in seq[ct].pulses.keys()):
+                        seq[ct] *= BLANK(chan, pulse.length)
+            elif hasattr(seq[ct], 'qubits'):
+                chan = seq[ct].qubits
+                if has_gate(chan) and not seq[ct].isZero:
+                    seq[ct] *= BLANK(chan, seq[ct].length)
 
-    # convert times into samples
-    gateBuffer = int(round(gateBuffer * samplingRate))
-    gateMinWidth = int(round(gateMinWidth * samplingRate))
-    
+def has_gate(channel):
+    return hasattr(channel, 'gateChan') and channel.gateChan
+
+def apply_gating_constraints(chan, linkList):
+    # get channel parameters in samples
+    gateBuffer = int(round(chan.gateBuffer * chan.samplingRate))
+    gateMinWidth = int(round(chan.gateMinWidth * chan.samplingRate))
+
     #Initialize list of sequences to return
     gateSeqs = []
 
-    # Time from end of previous LL entry that trigger needs to go
-    # high to gate pulse
-    startDelay = gateBuffer
     for miniLL in linkList:
-        #Initialize a zero-length padding sequence
-        gateSeq = [Compiler.create_padding_LL(0)]
-        # we need to pad the miniLL with an extra entry if the last entry is not a zero
-        if not miniLL[-1].isZero:
-            miniLL.append(Compiler.create_padding_LL(MIN_ENTRY_LENGTH))
-
-        #Step through sequence changing state as necessary
-        blankHigh = False
+        gateSeq = []
+        # first pass consolidates entries
+        previousEntry = None
         for entry in miniLL:
-            #If we are low and the current entry is high then we need to add an element
-            if not blankHigh and not entry.isZero:
-                gateSeq.append(Compiler.create_padding_LL(entry.totLength, high=True))
-                blankHigh = True
-            #If we are high and the next entry is low then we need to add an element
-            elif blankHigh and entry.isZero:
-                gateSeq.append(Compiler.create_padding_LL(entry.totLength, high=False))
-                blankHigh = False
-            #Otherwise we just continue along in the same state
+            if isinstance(entry, ControlFlow.ControlInstruction):
+                if previousEntry:
+                    gateSeq.append(previousEntry)
+                    previousEntry = None
+                gateSeq.append(entry)
+                continue
+
+            if previousEntry is None:
+                previousEntry = entry
+                continue
+
+            # matching entry types can be globbed together
+            if previousEntry.isZero == entry.isZero:
+                previousEntry.length += entry.length
             else:
-                gateSeq[-1].length += entry.totLength
+                gateSeq.append(previousEntry)
+                previousEntry = entry
 
+        # push on the last entry if necessary
+        if previousEntry:
+            gateSeq.append(previousEntry)
 
-        #Go back through and add the gate buffer to the start of each marker high period.
-        #Assume that we start low and alternate low-high-low from the construction above
-        #Step through every high pulse and look at the previous one
-        for entryct in range(1, len(gateSeq),2):
-            #If the previous low pulse is less than the gate buffer then we'll drop it
-            #and add its length and the length of the current high entry to the previous high entry 
-            if gateSeq[entryct-1].length < gateBuffer:
-                #Look for the last valid previous high entry
-                goodIdx = entryct-2
-                while not gateSeq[goodIdx]:
-                    goodIdx -= 2
-                gateSeq[goodIdx].length += \
-                        gateSeq[entryct-1].totLength + gateSeq[entryct].totLength
-                #Mark the two dropped entries as removed by setting them to none
-                gateSeq[entryct-1] = None
-                gateSeq[entryct] = None
-            #Otherwise we subtract the gate buffer from the previous length 
+        # second pass expands non-zeros by gateBuffer
+        for ct in range(len(gateSeq)):
+            if isNonZeroWaveform(gateSeq[ct]):
+                gateSeq[ct].length += gateBuffer
+                # contract the next pulse by the same amount
+                if ct + 1 < len(gateSeq) - 1 and not isinstance(gateSeq[ct+1], ControlFlow.ControlInstruction):
+                    gateSeq[ct+1].length -= gateBuffer #TODO: what if this becomes negative?
+
+        # third pass ensures gateMinWidth
+        ct = 0
+        while ct+2 < len(gateSeq):
+            # look for pulse, delay, pulse pattern and ensure delay is long enough
+            if [isNonZeroWaveform(x) for x in gateSeq[ct:ct+3]] == [True, False, True] and \
+                gateSeq[ct+1].length < gateMinWidth and \
+                [isinstance(x, ControlFlow.ControlInstruction) for x in gateSeq[ct:ct+3]] == [False, False, False]:
+                gateSeq[ct].length += gateSeq[ct+1].length + gateSeq[ct+2].length
+                del gateSeq[ct+1:ct+3]
             else:
-                gateSeq[entryct-1].length -= gateBuffer
-                gateSeq[entryct].length += gateBuffer
-            entryct += 2
-        #Remove dropped entries
-        gateSeq = filter(lambda x : x is not None, gateSeq)
+                ct += 1
 
-        #Loop through again and make sure that all the low points between pulses are sufficiently long
-        #Given the above construction we should have the low-high-low form
-        for entryct in range(2, len(gateSeq)-1, 2):
-            if gateSeq[entryct].length < gateMinWidth:
-                #Consolidate this and the next entry onto the previous one
-                #Look for the last valid previous high entry
-                goodIdx = entryct-1
-                while not gateSeq[goodIdx]:
-                    goodIdx -= 2
-                gateSeq[goodIdx].length += \
-                        gateSeq[entryct].totLength + gateSeq[entryct+1].totLength
-                #Mark the two dropped entries as removed by setting them to none
-                gateSeq[entryct] = None
-                gateSeq[entryct+1] = None
-            entryct = 2
-        #Remove dropped entries
-        gateSeq = filter(lambda x : x is not None, gateSeq)
-    
-        #Add it on
         gateSeqs.append(gateSeq)
 
     return gateSeqs
 
-def add_marker_pulse(LL, startPt, length):
-    '''
-    Helper function to add a marker pulse to a LL from a given startPt and with a given length
-    '''
-    pass
+def isNonZeroWaveform(entry):
+    return not isinstance(entry, ControlFlow.ControlInstruction) and not entry.isZero
 
 def add_digitizer_trigger(seqs, trigChan):
     '''
-    Add the digitizer trigger.  For now hardcoded but should be loaded from config file.
+    Add the digitizer trigger to a logical LL (pulse blocks).
     '''
-    #Assume that last pulse is the measurment pulse for now and tensor on the digitizer trigger pulse
+    # Attach a trigger to any pulse block containing a measurement
+    pulseLength = trigChan.pulseParams['length'] * trigChan.physChan.samplingRate
     for seq in seqs:
-        #Hack around copied list elements referring to same sequence element
-        if isinstance(seq[-1], Pulse) or trigChan not in seq[-1].pulses.keys():
-            seq[-1] *= Pulse("digTrig", trigChan, trigChan.pulseParams['shapeFun'](**trigChan.pulseParams), 0.0, 0.0)
+        for ct in range(len(seq)):
+            if contains_measurement(seq[ct]) and not (hasattr(seq[ct], 'pulses') and trigChan in seq[ct].pulses.keys()):
+                seq[ct] *= TAPulse("TRIG", trigChan, pulseLength, 1.0, 0.0, 0.0)
 
-def slave_trigger(numSeqs):
-    """
-    Create slave trigger link lists.
-    """
-    return [[Compiler.create_padding_LL(1), Compiler.create_padding_LL(1, True), Compiler.create_padding_LL(1)] for _ in range(numSeqs)], Compiler.markerWFLib
+def contains_measurement(entry):
+    '''
+    Determines if a LL entry contains a measurement
+    '''
+    if entry.label == "MEAS":
+        return True
+    elif hasattr(entry, 'pulses'):
+        for p in entry.pulses.values():
+            if p.label == "MEAS":
+                return True
+    return False
 
-
-    
-        
-
-
-
+def add_slave_trigger(seqs, slaveChan):
+    '''
+    Add the slave trigger to each sequence.
+    '''
+    pulseLength = slaveChan.pulseParams['length'] * slaveChan.physChan.samplingRate
+    for seq in seqs:
+        # skip if the sequence already starts with a slave trig
+        if hasattr(seq[0], 'qubits') and seq[0].qubits == slaveChan:
+            continue
+        seq.insert(0, TAPulse("TRIG", slaveChan, pulseLength, 1.0, 0.0, 0.0))

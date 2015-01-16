@@ -61,6 +61,14 @@ class Pulse(object):
     def __mul__(self, other):
         return self.promote()*other.promote()
 
+    def __eq__(self, other):
+        mydict = self.__dict__.copy()
+        otherdict = other.__dict__.copy()
+        # element-wise comparison of shape
+        mydict.pop('shape')
+        otherdict.pop('shape')
+        return mydict == otherdict and all(self.shape == other.shape)
+
     def promote(self):
         # promote a Pulse to a PulseBlock
         pb =  PulseBlock()
@@ -74,13 +82,17 @@ class Pulse(object):
         else:
             return len(self.shape)
 
+    @property
+    def isZero(self):
+        return np.all(self.shape == 0)
+
 def TAPulse(label, qubits, length, amp, phase, frameChange):
     '''
     Creates a time/amplitude pulse with the given pulse length and amplitude
     '''
     p = Pulse(label, qubits, np.array([amp], np.complex), phase, frameChange)
     p.isTimeAmp = True
-    p.TALength = length
+    p.TALength = int(round(length))
     return p
 
 class CompositePulse(object):
@@ -110,6 +122,9 @@ class CompositePulse(object):
 
     def __mul__(self, other):
         return self.promote()*other.promote()
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
     def promote(self):
         # promote a CompositePulse to a PulseBlock
@@ -142,9 +157,11 @@ class PulseBlock(object):
         #How multiple channels are aligned.
         self.alignment = 'left'
         self.pulses = {}
+        self.label = None
 
     def __repr__(self):
-        return u"\u2297 ".join([str(pulse) for pulse in self.pulses.values()]).encode('utf-8')
+        labelPart = "{0}: ".format(self.label) if self.label else ""
+        return labelPart + u"\u2297 ".join([str(pulse) for pulse in self.pulses.values()]).encode('utf-8')
 
     def __str__(self):
         return "Pulses " + ";".join([str(pulse) for pulse in self.pulses.values()]) + " alignment: {0}".format(self.alignment).encode('utf-8')
@@ -164,6 +181,14 @@ class PulseBlock(object):
             else:
                 result.pulses[k] = v
         return result
+
+    def __eq__(self, other):
+        # ignore label in equality testing
+        mydict = self.__dict__.copy()
+        otherdict = other.__dict__.copy()
+        mydict.pop('label')
+        otherdict.pop('label')
+        return mydict == otherdict
 
     #PulseBlocks don't need to be promoted, so just return self
     def promote(self):
@@ -197,15 +222,16 @@ def repeat(p, n):
 AWGFreq = 1.2e9
 
 def show(seq):
-    from Compiler import compile_sequence, normalize #import here to avoid circular imports 
+    import Compiler
+    from Compiler import compile_sequence #import here to avoid circular imports 
     #compile
-    linkList, wfLib = compile_sequence(normalize(seq))
+    linkList, wfLib = compile_sequence(seq)
 
     # build a concatenated waveform for each channel
     channels = linkList.keys()
     concatShapes = {q: np.array([0], dtype=np.complex128) for q in channels}
     for q in channels:
-        for entry in linkList[q]:
+        for entry in filter(lambda x: isinstance(x, Compiler.LLWaveform), linkList[q]):
             if entry.isTimeAmp:
                 concatShapes[q] = np.append(concatShapes[q], wfLib[q][entry.key][0]*np.ones(entry.length*entry.repeat))
             else:
@@ -225,6 +251,3 @@ def show(seq):
         plt.title(repr(chan))
     plt.show(p)
 
-
-if __name__ == '__main__':
-    pass
