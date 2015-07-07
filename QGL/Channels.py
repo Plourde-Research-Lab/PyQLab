@@ -40,6 +40,7 @@ import importlib
 
 from copy import deepcopy
 
+
 class Channel(Atom):
     '''
     Every channel has a label and some printers.
@@ -167,6 +168,27 @@ class Measurement(LogicalChannel):
         if self.gateChan is None:
             self.gateChan = LogicalMarkerChannel(label=kwargs['label']+'-gate')
 
+# class JPM(LogicalChannel):
+#     """A class for JPM Channels"""
+#     pulseParams = Dict(default={'length':5e-9, 'amp':1.0, 'shapeFun':PulseShapes.gaussian, 'buffer':0.0, 'cutoff':2, 'dragScaling':0, 'sigma':5e-9})
+#     gateChan = Instance((unicode, LogicalMarkerChannel))
+
+#     def __init__(self, **kwargs):
+#         super(JPM, self).__init__(**kwargs)
+#         if self.gateChan is None:
+#             self.gateChan = LogicalMarkerChannel(label=kwargs['label']+'-gate')
+        
+# class JPMMeasurement(LogicalChannel):
+#     """docstring for JPMMeasurement"""
+#     pulseParams = Dict(default={'Drive Offset (Hz)': 5e6, 'Length (s)': .2e-6, 'shapeFun':PulseShapes.tanh, 'buffer':0.0, 'cutoff':2, 'sigma':1e-9})
+#     gateChan = Instance((unicode, LogicalMarkerChannel))
+
+#     def __init__(self, **kwargs):
+#         super(JPMMeasurement, self).__init__(**kwargs)
+#         if self.gateChan is None:
+#             self.gateChan = LogicalMarkerChannel(label=kwargs['label']+'-gate')
+        
+
 def QubitFactory(label, **kwargs):
     ''' Return a saved qubit channel or create a new one. '''
     if Compiler.channelLib and label in Compiler.channelLib and isinstance(Compiler.channelLib[label], Qubit):
@@ -180,6 +202,20 @@ def MeasFactory(label, measType='autodyne', **kwargs):
         return Compiler.channelLib[label]
     else:
         return Measurement(label=label, measType=measType, **kwargs)
+
+# def JPMFactory(label, **kwargs):
+#     '''Return a saved JPM channel or create a new one. '''
+#     if Compiler.channelLib and label in Compiler.channelLib and isinstance(Compiler.channelLib[label], JPM):
+#         return Compiler.channelLib[label]
+#     else:
+#         return JPM(label=label, **kwargs)
+
+# def JPMMeasFactory(label, **kwargs):
+#     ''' Return a saved JPMMeasurement channel or create a new one. '''
+#     if Compiler.channelLib and label in Compiler.channelLib and isinstance(Compiler.channelLib[label], JPMMeasurement):
+#         return Compiler.channelLib[label]
+#     else:
+#         return JPMMeasurement(label=label, **kwargs)
 
 class ChannelLibrary(Atom):
     # channelDict = Dict(Str, Channel)
@@ -329,8 +365,8 @@ class ChannelLibrary(Atom):
                     print "Changing {0} to {1}".format(chName, newLabel)
                     self.physicalChannelManager.name_changed(chName, newLabel)
 
-
-NewLogicalChannelList = [Qubit, LogicalMarkerChannel, Measurement]
+from JPMChannels import JPM, JPMMeasurement, JPMFactory, JPMMeasFactory
+NewLogicalChannelList = [Qubit, LogicalMarkerChannel, Measurement, JPM, JPMMeasurement]
 NewPhysicalChannelList = [PhysicalMarkerChannel, PhysicalQuadratureChannel]
 
 if __name__ == '__main__':

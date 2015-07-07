@@ -7,3 +7,7 @@ from BasicSequences import *
 from Plotting import output_file, output_notebook, show, build_waveforms, plot_waveforms
 from PulseSequencePlotter import plot_pulse_files
 from Tomography import state_tomo, process_tomo
+
+
+from Channels import JPMFactory, JPMMeasFactory, JPM
+from JPMPulsePrimitives import *

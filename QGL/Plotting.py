@@ -47,7 +47,7 @@ def in_ipynb():
 output_file()
 
 def build_waveforms(seq):
-    import PulseSequencer, Compiler #import here to avoid circular imports
+    import PulseSequencer, JPMPulseSequencer, Compiler #import here to avoid circular imports
     wires = Compiler.compile_sequence(seq)
 
     # build a concatenated waveform for each channel
@@ -57,7 +57,7 @@ def build_waveforms(seq):
         # TODO: deal with repeated sections
         frame = 0
         for pulse in wires[q]:
-            if isinstance(pulse, PulseSequencer.Pulse):
+            if isinstance(pulse, (PulseSequencer.Pulse, JPMPulseSequencer.JPMPulse)):
                 shape = np.exp(1j*(frame+pulse.phase)) * pulse.shapeParams['amp'] * pulse.shape
                 frame += pulse.frameChange
                 concatShapes[q] = np.append(concatShapes[q], shape)

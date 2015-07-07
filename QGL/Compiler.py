@@ -28,6 +28,7 @@ from PatternUtils import flatten
 import Channels
 from PulsePrimitives import Id
 import PulseSequencer
+import JPMPulseSequencer
 import ControlFlow
 import BlockLabel
 import instruments
@@ -139,7 +140,7 @@ def generate_waveforms(physicalWires):
     wfs = {ch : {} for ch in physicalWires.keys()}
     for ch, wire in physicalWires.items():
         for pulse in flatten(wire):
-            if not isinstance(pulse, PulseSequencer.Pulse):
+            if not isinstance(pulse, (PulseSequencer.Pulse, JPMPulseSequencer.JPMPulse)):
                 continue
             if pulse.hashshape() not in wfs[ch]:
                 if pulse.isTimeAmp:
@@ -154,7 +155,7 @@ def pulses_to_waveforms(physicalWires):
         for seq in seqs:
             wireOuts[ch].append([])
             for pulse in seq:
-                if not isinstance(pulse, PulseSequencer.Pulse):
+                if not isinstance(pulse, (PulseSequencer.Pulse, JPMPulseSequencer.JPMPulse)):
                     wireOuts[ch][-1].append(pulse)
                 else:
                     wf = Waveform(pulse)
@@ -321,6 +322,11 @@ def find_unique_channels(seq):
                 channels |= set([step.qubits])
             else:
                 channels |= set(step.qubits)
+        if isinstance(step, JPMPulseSequencer.JPMPulse):
+            if isinstance(step.jpms, Channels.Channel):
+                channels |= set([step.jpms])
+            else:
+                channels |= set(step.jpms)
         elif hasattr(step, 'pulses'):
             channels |= set(step.pulses.keys())
     return channels
