@@ -1,7 +1,5 @@
 from copy import copy
-import json
 import numpy as np
-import bokeh.plotting as bk
 
 from PulseSequencer import PulseBlock
 
