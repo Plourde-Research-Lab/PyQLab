@@ -277,6 +277,43 @@ enamldef StreamSelectorView(GroupBox):
             checked := myFilter.saveRecords
             tool_tip = myFilter.get_member('saveRecords').metadata['desc']
 
+enamldef CounterStreamView(GroupBox):
+    attr myFilter
+    attr filterLib
+    title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
+    hug_width = 'medium'
+    Form:
+        Label:
+            text = "Data source"
+        Field:
+            text := myFilter.dataSource
+        Label:
+            text = "Channels"
+        Field:
+            text := myFilter.channel
+        Label:
+            text = 'Repititions'
+        IntField:
+            value := myFilter.repititions
+        Label:
+            text = 'Records File'
+        Field:
+            text := myFilter.recordsFilePath
+            tool_tip = myFilter.get_member('recordsFilePath').metadata['desc']
+        Label:
+            text = "Save records"
+        CheckBox:
+            checked := myFilter.saveRecords
+            tool_tip = myFilter.get_member('saveRecords').metadata['desc']
+        Label:
+            text = "Plot mode"
+        Field:
+            text := myFilter.plotMode
+        Label:
+            text = 'Saved'
+        CheckBox:
+            checked := myFilter.saved
+
 #Dummy empty view
 enamldef EmptyMeasFilterForm(Container):
     attr myFilter
@@ -289,7 +326,8 @@ filterViewMap = {type(None): EmptyMeasFilterForm,
     MeasFilters.KernelIntegration: KernelIntegrationForm,
     MeasFilters.Correlator: CorrelatorView,
     MeasFilters.StateComparator: StateComparatorView,
-    MeasFilters.StreamSelector: StreamSelectorView}
+    MeasFilters.StreamSelector: StreamSelectorView,
+    MeasFilters.CounterStream: CounterStreamView}
 
 enamldef MeasFilterManager(Container): measFilterManager:
     attr filterLib

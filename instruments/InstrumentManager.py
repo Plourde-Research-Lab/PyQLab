@@ -11,13 +11,15 @@ import importlib
 
 from DictManager import DictManager
 
-import Digitizers, Analysers, DCSources, Attenuators
+import Digitizers, Analysers, DCSources, Attenuators, Counters
 newOtherInstrs = [Digitizers.AlazarATS9870,
     Digitizers.X6,
+    Digitizers.AgilentAP240,
     Analysers.HP71000,
     Analysers.SpectrumAnalyzer,
     DCSources.YokoGS200,
-    Attenuators.DigitalAttenuator]
+    Attenuators.DigitalAttenuator,
+    Counters.Counter]
 
 class InstrumentLibrary(Atom):
     #All the instruments are stored as a dictionary keyed of the instrument name

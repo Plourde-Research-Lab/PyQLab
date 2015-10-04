@@ -1,0 +1,25 @@
+from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, ComboBox, \
+								PushButton
+from enaml.stdlib.fields import IntField
+from enaml.layout.api import hbox, vbox, spacer
+from enaml.core.api import Conditional
+
+import Counters
+
+enamldef CounterForm(GroupBox):
+	attr instr
+	title := '{} ({})'.format(instr.label, instr.__class__.__name__)
+	Form:
+		padding = 2
+		Label: 
+			text = 'Address'
+		Field: 
+			text := instr.address
+			tool_tip = instr.get_member('address').metadata['desc']
+		Label:
+			text = 'Repititions'
+		IntField:
+			value := instr.reps
+			tool_tip = instr.get_member('reps').metadata['desc']
+
+CountersViewMap = {Counters.Counter:CounterForm}

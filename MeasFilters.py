@@ -34,6 +34,30 @@ class MeasFilter(Atom):
             jsonDict['x__module__'] = self.__class__.__module__
         return jsonDict
 
+class CounterMeasFilter(Atom):
+    label = Str()
+    enabled = Bool(True)
+    plotMode = Enum('normal').tag(desc='Filtered data scope mode.')
+    saved = Bool(True).tag(desc='Whether the filtered values should be saved to file.')
+    dataSource = Str().tag(desc="Where the measurement data is pushed from.")
+
+    def json_encode(self, matlabCompatible=False):
+        jsonDict = self.__getstate__()
+        if matlabCompatible:
+            jsonDict['filterType'] = self.__class__.__name__
+            jsonDict.pop('enabled', None)
+            jsonDict.pop('label', None)
+            import numpy as np
+            import base64
+            try:
+                jsonDict['kernel'] = base64.b64encode(eval(self.kernel))
+            except:
+                jsonDict['kernel'] = []
+        else:
+            jsonDict['x__class__'] = self.__class__.__name__
+            jsonDict['x__module__'] = self.__class__.__module__
+        return jsonDict
+
 class RawStream(MeasFilter):
     saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
     recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
@@ -104,6 +128,13 @@ class StreamSelector(MeasFilter):
     saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
     recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
 
+class CounterStream(CounterMeasFilter):
+    channel = Str('1').tag(desc='Channel of the Arduino Counter')
+    repititions = Int(1000).tag(desc='Number of repitions to be averaged over')
+    saveRecords = Bool(True).tag(desc='Whether to save the single-shot records to file.')
+    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
+    plotMode = Str('normal')
+
 class MeasFilterLibrary(Atom):
     # filterDict = Dict(Str, MeasFilter)
     filterDict = Coerced(dict)
@@ -151,7 +182,7 @@ class MeasFilterLibrary(Atom):
             return {"filterDict":{label:filt for label,filt in self.filterDict.items()}}
 
 
-measFilterList = [RawStream, DigitalDemod, KernelIntegration, Correlator, StateComparator, StreamSelector]
+measFilterList = [RawStream, DigitalDemod, KernelIntegration, Correlator, StateComparator, StreamSelector, CounterStream]
 
 if __name__ == "__main__":
 
