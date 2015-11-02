@@ -19,7 +19,11 @@ enamldef CounterForm(GroupBox):
 		Label:
 			text = 'Repititions'
 		IntField:
-			value := instr.reps
-			tool_tip = instr.get_member('reps').metadata['desc']
-
+			value := instr.repititions
+			tool_tip = instr.get_member('repititions').metadata['desc']
+		Label:
+			text = 'Segments'
+		IntField:
+			value := instr.segments
+			tool_tip = instr.get_member('segments').metadata['desc']
 CountersViewMap = {Counters.Counter:CounterForm}

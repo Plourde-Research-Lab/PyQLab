@@ -15,4 +15,3 @@ class TekAFG3022B(DCSource):
 		if matlabCompatible:
 			jsonDict['address'] = self.address
 		return jsonDict
-
