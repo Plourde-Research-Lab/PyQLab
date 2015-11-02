@@ -131,6 +131,7 @@ class StreamSelector(MeasFilter):
 class CounterStream(CounterMeasFilter):
     channel = Str('1').tag(desc='Channel of the Arduino Counter')
     repititions = Int(1000).tag(desc='Number of repitions to be averaged over')
+    segments = Int(1).tag(desc='Number of waveform segments')
     saveRecords = Bool(True).tag(desc='Whether to save the single-shot records to file.')
     recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
     plotMode = Str('normal')

@@ -296,6 +296,10 @@ enamldef CounterStreamView(GroupBox):
         IntField:
             value := myFilter.repititions
         Label:
+            text = 'Segments'
+        IntField:
+            value := myFilter.segments
+        Label:
             text = 'Records File'
         Field:
             text := myFilter.recordsFilePath

@@ -13,14 +13,16 @@ class Counter(Instrument):
 	# 	self.arg = arg
 
 	address = Str('').tag(desc='USB Port of Arduino')
-	reps = Int(1000).tag(desc='Reptitions per Experiment')
+	repititions = Int(1000).tag(desc='Reptitions per Experiment')
+	segments = Int(1).tag(desc='Waveform segments per Experiment')
 
 	def json_encode(self, matlabCompatible=False):
 		if matlabCompatible:
 			jsonDict = {}
 			jsonDict['address'] = self.address
 			jsonDict['deviceName'] = 'ArduinoCounter'
-			jsonDict['reps'] = self.reps
+			jsonDict['repititions'] = self.repititions
+			jsonDict['segments'] = self.segments
 		else:
 			jsonDict = super(Counter, self).json_encode(matlabCompatible)
 
