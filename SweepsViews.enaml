@@ -336,6 +336,37 @@ enamldef ThresholdSweepForm(GroupBox):
             obj := sweep
             enumName = 'stream'
 
+enamldef PulseSweepForm(GroupBox):
+    attr sweep
+    attr possibleInstrs
+    title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
+    Form:
+        Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
+        Label:
+            text = 'Start'
+        FloatField:
+            value := sweep.start
+        Label:
+            text = 'Stop'
+        FloatField:
+            value := sweep.stop
+        Label:
+            text = 'Step'
+        FloatField:
+            value := sweep.step
+        Label:
+            text = 'Num. Points'
+        IntField:
+            value := sweep.numPoints
+        Label: 
+            text = 'Mode'
+        EnumComboBox:
+            items = ['amp', 'width']
+            obj := sweep
+            enumName = 'mode'         
 
 enamldef EmptySweepForm(Container):
     attr sweep
@@ -352,7 +383,8 @@ sweepViewMap = {type(None):EmptySweepForm, Sweeps.PointsSweep:PointsSweepForm,
                     Sweeps.Repeat:RepeatForm,
                     Sweeps.DC:PointsSweepForm,
                     Sweeps.HeterodyneFrequency:HeterodyneSweepForm,
-                    Sweeps.Threshold:ThresholdSweepForm}
+                    Sweeps.Threshold:ThresholdSweepForm,
+                    Sweeps.Pulse:PulseSweepForm}
 
 enamldef SweepManager(Container): sweepManager:
     attr sweepLib
