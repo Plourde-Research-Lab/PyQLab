@@ -1,0 +1,36 @@
+from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, ComboBox, \
+								PushButton
+from enaml.stdlib.fields import FloatField
+from enaml.layout.api import hbox, vbox, spacer
+from enaml.core.api import Conditional
+
+import PulseGenerators
+
+from widgets.enum_combos import EnumComboBox
+
+enamldef PulseGeneratorForm(GroupBox):
+	attr instr
+	title := '{} ({})'.format(instr.label, instr.__class__.__name__)
+	Form:
+		padding = 2
+		Label: 
+			text = 'Address'
+		Field: 
+			text := instr.address
+			tool_tip = instr.get_member('address').metadata['desc']
+		Label:
+			text = 'Channel'
+		EnumComboBox:
+			obj := instr
+			enumName = "channel"
+		Label:
+			text = 'Width (us)'
+		FloatField:
+			value := instr.width
+			tool_tip = instr.get_member('width').metadata['desc']
+		Label:
+			text = 'Amplitude (V)'
+		FloatField:
+			value := instr.amp
+			tool_tip = instr.get_member('amp').metadata['desc']
+PulseGeneratorsViewMap = {PulseGenerators.PulseGenerator:PulseGeneratorForm}
