@@ -9,6 +9,9 @@ import itertools, ast
 import enaml
 from enaml.qt.qt_application import QtApplication
 
+class Digitizer(Instrument):
+	pass
+
 class AlazarATS9870(Instrument):
 	address = Str('1').tag(desc='Location of the card') #For now we only have one
 	acquireMode = Enum('digitizer', 'averager').tag(desc='Whether the card averages on-board or returns single-shot data')
@@ -49,9 +52,11 @@ class AlazarATS9870(Instrument):
 class X6VirtualChannel(Atom):
 	label = Str()
 	enableDemodStream = Bool(True).tag(desc='Enable demodulated data stream')
-	enableResultStream = Bool(True).tag(desc='Enable result data stream')
+	enableDemodResultStream = Bool(True).tag(desc='Enable demod result data stream')
+	enableRawResultStream = Bool(True).tag(desc='Enable raw result data stream')
 	IFfreq = Float(10e6).tag(desc='IF Frequency')
-	kernel = Str().tag(desc='Integration kernel vector')
+	demodKernel = Str().tag(desc='Integration kernel vector for demod stream')
+	rawKernel = Str().tag(desc='Integration kernel vector for raw stream')
 	threshold = Float(0.0).tag(desc='Qubit state decision threshold')
 
 	def json_encode(self, matlabCompatible=False):
@@ -60,9 +65,13 @@ class X6VirtualChannel(Atom):
 			import numpy as np
 			import base64
 			try:
-				jsonDict['kernel'] = base64.b64encode(eval(self.kernel))
+				jsonDict['demodKernel'] = base64.b64encode(eval(self.demodKernel))
 			except:
-				jsonDict['kernel'] = []
+				jsonDict['demodKernel'] = []
+			try:
+				jsonDict['rawKernel'] = base64.b64encode(eval(self.rawKernel))
+			except:
+				jsonDict['rawKernel'] = []
 		return jsonDict
 
 class X6(Instrument):
@@ -73,13 +82,15 @@ class X6(Instrument):
 	enableRawStreams = Bool(False).tag(desc='Enable capture of raw data from ADCs')
 	# channels = Dict(None, X6VirtualChannel)
 	channels = Coerced(dict)
+	digitizerMode = Enum('digitizer', 'averager').tag(desc='Whether the card averages on-board or returns single-shot data')
 
 	def __init__(self, **traits):
 		super(X6, self).__init__(**traits)
 		if not self.channels:
 			for a, b in itertools.product(range(1,3), range(1,3)):
 				label = str((a,b))
-				self.channels[label] = X6VirtualChannel(label=label)
+				key = "s{0}{1}".format(a, b)
+				self.channels[key] = X6VirtualChannel(label=label)
 
 	def json_encode(self, matlabCompatible=False):
 		jsonDict = super(X6, self).json_encode(matlabCompatible)
@@ -87,15 +98,23 @@ class X6(Instrument):
 			# For the Matlab experiment manager we nest averager settings
 			map(lambda x: jsonDict.pop(x), ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins'])
 			jsonDict['averager'] = {k:getattr(self,k) for k in ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins']}
-			# re-write channel labels into matlab-compatible names
-			# need to copy otherwise we'll mutate the object's channel dict
-			jsonDict['channels'] = jsonDict['channels'].copy()
-			for chan in jsonDict['channels'].keys():
-				settings = jsonDict['channels'].pop(chan)
-				a, b = ast.literal_eval(chan)
-				jsonDict['channels']["s{0}{1}".format(a, b)] = settings
 
 		return jsonDict
+
+	def update_from_jsondict(self, params):
+
+		for chName, chParams in params['channels'].items():
+			# if this is still a raw dictionary convert to object
+			if isinstance(chParams, dict):
+				chParams.pop('x__class__', None)
+				chParams.pop('x__module__', None)
+				chParams = X6VirtualChannel(**chParams)
+
+			for paramName in chParams.__getstate__().keys():
+				setattr(self.channels[chName], paramName, getattr(chParams, paramName))
+
+		params.pop('channels')
+		super(X6, self).update_from_jsondict(params)
 
 if __name__ == "__main__":
 	from Digitizers import X6
@@ -107,4 +126,3 @@ if __name__ == "__main__":
 	view = TestX6Window(instr=digitizer)
 	view.show()
 	app.start()
-	

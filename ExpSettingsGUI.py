@@ -1,4 +1,6 @@
-from atom.api import Atom, Typed, Str, Bool
+#! /usr/bin/env python
+import h5py
+from atom.api import Atom, Typed, Str, Bool, List
 
 import enaml
 from enaml.qt.qt_application import QtApplication
@@ -12,6 +14,8 @@ import QGL.Channels
 import json
 import os
 import config
+import ExpSettingsVal
+import shutil
 
 class ExpSettings(Atom):
 
@@ -20,11 +24,17 @@ class ExpSettings(Atom):
     measurements = Typed(MeasFilters.MeasFilterLibrary)
     channels = Typed(QGL.Channels.ChannelLibrary)
     CWMode = Bool(False)
+    validate = Bool(True)
     curFileName = Str('DefaultExpSettings.json')
+    validation_errors = List()
 
     def __init__(self, **kwargs):
         super(ExpSettings, self).__init__(**kwargs)
         self.update_instr_list()
+        self.validation_errors = []
+
+        # setup on change AWG
+        self.instruments.AWGs.onChangeDelegate = self.channels.on_awg_change
 
     # TODO: get this to work
     # @on_trait_change('instruments.instrDict_items')
@@ -38,19 +48,70 @@ class ExpSettings(Atom):
         import JSONHelpers
         pass
 
-    def write_to_file(self):
+    def write_to_file(self,fileName=None):
         import JSONHelpers
-        with open(self.curFileName,'w') as FID:
+        curFileName = fileName if fileName != None else self.curFileName
+        with open(curFileName, 'w') as FID:
             json.dump(self, FID, cls=JSONHelpers.ScripterEncoder, indent=2, sort_keys=True, CWMode=self.CWMode)
 
     def write_libraries(self):
         """Write all the libraries to their files.
 
         """
+        
+        if self.validate:
+            self.validation_errors = ExpSettingsVal.validate_lib()
+            if self.validation_errors != []:
+                print "JSON Files did not validate"
+                return False
+        elif not self.validate:
+            print "JSON Files validation disabled"
         self.channels.write_to_file()
         self.instruments.write_to_file()
         self.measurements.write_to_file()
         self.sweeps.write_to_file()
+
+        return True
+        
+    def save_config(self,path):
+        
+        if self.validate:
+            self.validation_errors = ExpSettingsVal.validate_lib()
+            if self.validation_errors != []:
+                print "JSON Files did not validate"
+                return False
+        elif not self.validate:
+            print "JSON Files validation disabled"
+            
+        try:
+            self.channels.write_to_file(fileName=path+ os.sep + os.path.basename(self.channels.libFile))        
+            self.measurements.write_to_file(fileName=path+ os.sep + os.path.basename(self.measurements.libFile))
+            self.instruments.write_to_file(fileName=path+ os.sep + os.path.basename(self.instruments.libFile))
+            self.sweeps.write_to_file(fileName=path+ os.sep + os.path.basename(self.sweeps.libFile))
+            self.write_to_file(fileName=path+ os.sep + os.path.basename(self.curFileName))
+        except:
+            return False
+        
+        
+        return True
+        
+    def load_config(self,path):
+        
+        print("LOADING FROM:",path)
+        
+        try:
+            shutil.copy(path+ os.sep + os.path.basename(self.channels.libFile),self.channels.libFile)
+            shutil.copy(path+ os.sep + os.path.basename(self.instruments.libFile),self.instruments.libFile)
+            shutil.copy(path+ os.sep + os.path.basename(self.measurements.libFile),self.measurements.libFile)
+            shutil.copy(path+ os.sep + os.path.basename(self.sweeps.libFile),self.sweeps.libFile)
+            shutil.copy(path+ os.sep + os.path.basename(self.curFileName),self.curFileName)
+        except shutil.Error as e:
+            print('Error: %s' % e)
+        except IOError as e:
+            print('Error: %s' % e.strerror)
+            
+        return True
+        
 
     def apply_quickpick(self, name):
         try:
@@ -85,12 +146,21 @@ class ExpSettings(Atom):
         #We encode this for an experiment settings file so no channels
         return {'instruments':self.instruments, 'sweeps':self.sweeps, 'measurements':self.measurements, 'CWMode':self.CWMode}
 
+    def format_errors(self):
+        return '\n'.join(self.validation_errors)
+
 if __name__ == '__main__':
     import Libraries
-
+    
     from ExpSettingsGUI import ExpSettings
-    expSettings= ExpSettings(sweeps=Libraries.sweepLib, instruments=Libraries.instrumentLib,
-                     measurements=Libraries.measLib,  channels=Libraries.channelLib)
+    expSettings = ExpSettings(sweeps=Libraries.sweepLib,
+                              instruments=Libraries.instrumentLib,
+                              measurements=Libraries.measLib,
+                              channels=Libraries.channelLib)
+
+    # setup on change AWG
+    expSettings.instruments.AWGs.onChangeDelegate = expSettings.channels.on_awg_change
+    
 
     #If we were passed a scripter file to write to then use it
     parser = argparse.ArgumentParser()

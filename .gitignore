@@ -1,8 +1,4 @@
 *.pyc
-*.swp
-*.swo
-*~
-*.h5
 *.awg
 *.json
 __enamlcache__/

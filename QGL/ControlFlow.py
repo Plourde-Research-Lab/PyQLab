@@ -1,36 +1,48 @@
-from BlockLabel import label, endlabel
+from BlockLabel import newlabel, label, endlabel
+from PulseSequencer import Pulse
 from functools import wraps
-
+from mm import multimethod
 
 ## QGL control-flow statements ##
 
 def qif(mask, ifSeq, elseSeq=None):
 	if elseSeq:
-		endlabel(elseSeq) # make sure to populate label of elseSeq before using it
 		return [CmpEq(mask), Goto(label(ifSeq))] + elseSeq + [Goto(endlabel(ifSeq))] + ifSeq
 	else:
 		endlabel(ifSeq)
 		return [CmpNeq(mask), Goto(endlabel(ifSeq))] + ifSeq
 
 def qwhile(mask, seq):
-	return [CmpNeq(mask), Goto(endlabel(seq))] + seq
+	label1 = newlabel()
+	label2 = newlabel()
+	return [label1, CmpNeq(mask), Goto(label2)] + seq + [Goto(label1), label2]
 
 def qdowhile(mask, seq):
 	return seq + [CmpEq(mask), Goto(label(seq))]
 
+# caches for sequences and labels
+qfunction_seq = {}
 def qfunction(func):
-	# caches for sequences and labels
-	seq = {}
 	target = {}
 	@wraps(func)
 	def crfunc(*args):
 		if args not in target:
-			seq[args] = func(*args)
-			target[args] = label(seq[args])
-		return [Call(target[args])], seq[args] + [Return()] # TODO: update me to only return seq[args] on first call
+			seq = func(*args) + [Return()]
+			target[args] = label(seq)
+			qfunction_seq[label(seq)] = seq
+		return Call(target[args])
 	return crfunc
 
-def qrepeat(n, seq):
+def qfunction_specialization(target):
+	return qfunction_seq[target]
+
+@multimethod(int, Pulse)
+def repeat(n, p):
+    p.repeat = round(n)
+    return p
+
+@multimethod(int, list)
+def repeat(n, seq):
 	if n < 1:
 		return None
 	elif n == 1:
@@ -40,19 +52,29 @@ def qrepeat(n, seq):
 		return [LoadRepeat(n)] + seq + [Repeat(label(seq))]
 
 # utility to repeat all sequences the same number of times
-def qrepeatall(n, seqs):
+def repeatall(n, seqs):
 	for ct in range(len(seqs)):
-		seqs[ct] = qrepeat(n, seqs[ct])
+		seqs[ct] = repeat(n, seqs[ct])
 	return seqs
+
+def qwait(kind="TRIG"):
+	if kind == "TRIG":
+		return Wait()
+	else:
+		return LoadCmp()
+
+def qsync():
+	return Sync()
 
 ## Sequencer primitives ##
 
 class ControlInstruction(object):
 	def __init__(self, instruction, target=None, value=None):
 		self.instruction = instruction
-		self.target = target
+		self.target = target #refactor into payload field??
 		self.value = value
 		self.label = None
+		self.length = 0
 
 	def __repr__(self):
 		return self.__str__()
@@ -67,49 +89,56 @@ class ControlInstruction(object):
 		return result
 
 	def __eq__(self, other):
-		# ignore label in equality testing
-		mydict = self.__dict__.copy()
-		otherdict = other.__dict__.copy()
-		mydict.pop('label')
-		otherdict.pop('label')
-		return mydict == otherdict
+		if isinstance(other, self.__class__):
+			# ignore label in equality testing
+			mydict = self.__dict__.copy()
+			otherdict = other.__dict__.copy()
+			mydict.pop('label')
+			otherdict.pop('label')
+			return mydict == otherdict
+		return False
+
+	def __ne__(self, other):
+		return not self == other
 
 	def promote(self):
 		return self
 
-	@property
-	def totLength(self):
-		return 0
+class Goto(ControlInstruction):
+	def __init__(self, target):
+		super(Goto, self).__init__("GOTO", target=target)
 
-	@property
-	def length(self):
-		return 0
+class Call(ControlInstruction):
+	def __init__(self, target):
+		super(Call, self).__init__("CALL", target=target)
 
-def Goto(target):
-	return ControlInstruction("GOTO", target=target)
+class Return(ControlInstruction):
+	def __init__(self):
+		super(Return, self).__init__("RETURN")
 
-def Call(target):
-	return ControlInstruction("CALL", target=target)
+class LoadRepeat(ControlInstruction):
+	def __init__(self, n):
+		super(LoadRepeat, self).__init__("LOAD", value=n)
 
-def Return():
-	return ControlInstruction("RETURN")
+class Repeat(ControlInstruction):
+	def __init__(self, target):
+		super(Repeat, self).__init__("REPEAT", target=target)
 
-def LoadRepeat(n):
-	return ControlInstruction("LOAD", value=n)
+class Wait(ControlInstruction):
+	def __init__(self):
+		super(Wait, self).__init__("WAIT")
 
-def Repeat(target):
-	return ControlInstruction("REPEAT", target=target)
+class Load(ControlInstruction):
+	def __init__(self):
+		super(Load, self).__init__("LOAD")
 
-def Wait(kind="TRIG"):
-	if kind == "TRIG":
-		return ControlInstruction("WAIT")
-	else:
-		return ControlInstruction("WAITCMP")
-qwait = Wait
+class LoadCmp(ControlInstruction):
+	def __init__(self):
+		super(LoadCmp, self).__init__("LOADCMP")
 
-def Sync():
-	return ControlInstruction("SYNC")
-qsync = Sync
+class Sync(ControlInstruction):
+	def __init__(self):
+		super(Sync, self).__init__("SYNC")
 
 class ComparisonInstruction(ControlInstruction):
 	def __init__(self, mask, operator):

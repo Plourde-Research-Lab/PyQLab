@@ -1,0 +1,136 @@
+{
+  "CWMode": false, 
+  "instruments": {
+    "BBNAPS1": {
+      "address": "A6001ixV", 
+      "chan_1": {
+        "amplitude": 0.5, 
+        "enabled": true, 
+        "offset": -0.0022
+      }, 
+      "chan_2": {
+        "amplitude": 0.5, 
+        "enabled": true, 
+        "offset": -0.0202
+      }, 
+      "chan_3": {
+        "amplitude": 0.5, 
+        "enabled": true, 
+        "offset": 0.0137
+      }, 
+      "chan_4": {
+        "amplitude": 0.5, 
+        "enabled": true, 
+        "offset": -0.0184
+      }, 
+      "delay": 0.0, 
+      "deviceName": "APS", 
+      "isMaster": true, 
+      "miniLLRepeat": 0, 
+      "numChannels": 4, 
+      "samplingRate": 1200000000.0, 
+      "seqFile": "C:/Users/Britton/Documents/BBN/awgs/Cavity-BBNAPS1.h5", 
+      "seqForce": true, 
+      "triggerInterval": 0.0001, 
+      "triggerSource": "External"
+    }, 
+    "BottomAgilentE8257D": {
+      "address": "7", 
+      "alc": true, 
+      "deviceName": "AgilentE8257D", 
+      "frequency": 5.25, 
+      "gateBuffer": 2e-08, 
+      "gateDelay": -6e-08, 
+      "gateMinWidth": 1e-07, 
+      "mod": false, 
+      "output": false, 
+      "power": 16.0, 
+      "pulse": false, 
+      "pulseSource": "External"
+    }, 
+    "CavityAttenuator": {
+      "address": "COM9", 
+      "ch1Attenuation": 0.0, 
+      "ch2Attenuation": 0.0, 
+      "ch3Attenuation": 0.0, 
+      "deviceName": "DigitalAttenuator"
+    }, 
+    "Scope": {
+      "acquireMode": "averager", 
+      "address": "1", 
+      "averager": {
+        "nbrRoundRobins": 500, 
+        "nbrSegments": 1, 
+        "nbrWaveforms": 1, 
+        "recordLength": 4096
+      }, 
+      "clockType": "ref", 
+      "deviceName": "AlazarATS9870", 
+      "horizontal": {
+        "delayTime": 0.0, 
+        "samplingRate": 500000000.0
+      }, 
+      "trigger": {
+        "triggerCoupling": "DC", 
+        "triggerLevel": 1.0, 
+        "triggerSlope": "rising", 
+        "triggerSource": "Ext"
+      }, 
+      "vertical": {
+        "bandwidth": "Full", 
+        "verticalCoupling": "AC", 
+        "verticalOffset": 0.0, 
+        "verticalScale": 1.0
+      }
+    }, 
+    "SpecAnalyzer": {
+      "address": "21", 
+      "deviceName": "HP8563E"
+    }, 
+    "TopAgilentE8257D": {
+      "address": "6", 
+      "alc": true, 
+      "deviceName": "AgilentE8257D", 
+      "frequency": 9.2, 
+      "gateBuffer": 2e-08, 
+      "gateDelay": -6e-08, 
+      "gateMinWidth": 1e-07, 
+      "mod": false, 
+      "output": true, 
+      "power": 18.0, 
+      "pulse": false, 
+      "pulseSource": "External"
+    }
+  }, 
+  "measurements": {
+    "M1": {
+      "IFfreq": 1000000.0, 
+      "bandwidth": 1000000.0, 
+      "boxCarStart": 320, 
+      "boxCarStop": 2600, 
+      "channel": 1, 
+      "childFilter": "", 
+      "dependent": false, 
+      "enabled": false, 
+      "filterFilePath": "", 
+      "label": "M1", 
+      "plotMode": "amp/phase", 
+      "plotScope": false, 
+      "recordsFilePath": "", 
+      "samplingRate": 500000000.0, 
+      "saveRecords": false, 
+    }
+}, 
+  "sweeps": {
+    "Cavity": {
+      "axisLabel": "Frequency", 
+      "instr": "TopAgilentE8257D", 
+      "numPoints": 201, 
+      "order": 1, 
+      "start": 11.0, 
+      "step": 0.0075, 
+      "stop": 12.5, 
+      "type": "Frequency"
+    }
+  }
+}

@@ -3,7 +3,7 @@ Various sweeps for scanning experiment parameters
 """
 
 from atom.api import Atom, Str, Float, Int, Bool, Dict, List, Enum, \
-    Coerced, Property, Typed, observe, cached_property
+    Coerced, Property, Typed, observe, cached_property, Int
 import enaml
 from enaml.qt.qt_application import QtApplication
 
@@ -39,14 +39,17 @@ class PointsSweep(Sweep):
 
     'step' depends on numPoints (but not the other way around) to break the dependency cycle
     """
-    start = Float(1.0)
+    start = Float(0.0)
     step = Property()
     stop = Float(1.0)
     numPoints = Int(1)
 
     def _set_step(self, step):
         # int() will give floor() casted to an Int
-        self.numPoints = int((self.stop - self.start)/floatbits.prevfloat(step)) + 1
+        try:
+            self.numPoints = int((self.stop - self.start)/floatbits.prevfloat(step)) + 1
+        except ValueError, e:
+            print("ERROR: Sweep named %s issue computing Num. Points: %s" % (self.label,e))
 
     def _get_step(self):
         return (self.stop - self.start)/max(1, self.numPoints-1)
@@ -86,7 +89,7 @@ class SegmentNumWithCals(PointsSweep):
             jsonDict['stop'] = self.stop + self.step * self.numCals
             jsonDict['numPoints'] = self.numPoints + self.numCals
         return jsonDict
-    
+
 class Repeat(Sweep):
     label = Str(default='Repeat')
     numRepeats = Int(1).tag(desc='How many times to loop.')
@@ -117,13 +120,19 @@ class DC(PointsSweep):
     label = Str(default='DC')
     instr = Str()
 
-newSweepClasses = [Power, Frequency, HeterodyneFrequency, Attenuation, SegmentNum, SegmentNumWithCals, AWGChannel, AWGSequence, DC, Repeat]
+class Threshold(PointsSweep):
+    label = Str(default="Threshold")
+    instr = Str()
+    stream = Enum('(1,1)','(1,2)','(2,1)','(2,2)').tag(desc='which stream to set threshold')
+
+newSweepClasses = [Power, Frequency, HeterodyneFrequency, Attenuation, SegmentNum, SegmentNumWithCals, AWGChannel, AWGSequence, DC, Repeat, Threshold]
 
 class SweepLibrary(Atom):
     sweepDict = Coerced(dict)
     sweepList = Property()
     sweepOrder = List()
     possibleInstrs = List()
+    version = Int(0)
 
     sweepManager = Typed(DictManager)
 
@@ -142,10 +151,13 @@ class SweepLibrary(Atom):
     def _get_sweepList(self):
         return [sweep.label for sweep in self.sweepDict.values() if sweep.enabled]
 
-    def write_to_file(self):
+    def write_to_file(self,fileName=None):
         import JSONHelpers
-        if self.libFile:
-            with open(self.libFile, 'w') as FID:
+        
+        libFileName = fileName if fileName != None else self.libFile
+        
+        if libFileName:
+            with open(libFileName, 'w') as FID:
                 json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
 
     def load_from_library(self):
@@ -153,7 +165,12 @@ class SweepLibrary(Atom):
         if self.libFile:
             try:
                 with open(self.libFile, 'r') as FID:
-                    tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
+                    try:
+                         tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
+                    except ValueError, e:
+                         print ("WARNING: JSON object issue: %s in %s" % (e,self.libFile))
+                         return
+
                     if isinstance(tmpLib, SweepLibrary):
                         self.sweepDict.update(tmpLib.sweepDict)
                         del self.possibleInstrs[:]
@@ -162,6 +179,8 @@ class SweepLibrary(Atom):
                         del self.sweepOrder[:]
                         for sweepStr in tmpLib.sweepOrder:
                             self.sweepOrder.append(sweepStr)
+                        # grab library version
+                        self.version = tmpLib.version
             except IOError:
                 print('No sweep library found.')
 
@@ -172,25 +191,30 @@ class SweepLibrary(Atom):
                   self.sweepDict[sweep].order = ct+1
                 return {label:sweep for label,sweep in self.sweepDict.items() if label in self.sweepOrder}
             else:
-                return {'sweepDict':{label:sweep for label,sweep in self.sweepDict.items()}, 'sweepOrder':self.sweepOrder}
+                return {
+                    'sweepDict': {label:sweep for label,sweep in self.sweepDict.items()},
+                    'sweepOrder': self.sweepOrder,
+                    'version': self.version
+                }
 
 
 
 
 
 if __name__ == "__main__":
-    from instruments.MicrowaveSources import AgilentN5183A  
+
+    from instruments.MicrowaveSources import AgilentN5183A
     testSource1 = AgilentN5183A(label='TestSource1')
     testSource2 = AgilentN5183A(label='TestSource2')
-
     from Sweeps import Frequency, Power, SegmentNumWithCals, SweepLibrary
+
     sweepDict = {
         'TestSweep1': Frequency(label='TestSweep1', start=5, step=0.1, stop=6, instr=testSource1.label),
         'TestSweep2': Power(label='TestSweep2', start=-20, stop=0, numPoints=41, instr=testSource2.label),
         'SegWithCals': SegmentNumWithCals(label='SegWithCals', start=0, stop=20, numPoints=101, numCals=4)
     }
     sweepLib = SweepLibrary(possibleInstrs=[testSource1.label, testSource2.label], sweepDict=sweepDict)
-    # sweepLib = SweepLibrary(libFile='Sweeps.json')
+    #sweepLib = SweepLibrary(libFile='Sweeps.json')
 
     with enaml.imports():
         from SweepsViews import SweepManagerWindow

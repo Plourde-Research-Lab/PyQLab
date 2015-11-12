@@ -17,78 +17,226 @@ limitations under the License.
 '''
 import numpy as np
 import os
-import collections
 import itertools
+import operator
 from warnings import warn
 from copy import copy
 
 import config
 import PatternUtils
+from PatternUtils import flatten
 import Channels
 from PulsePrimitives import Id
 import PulseSequencer
 import ControlFlow
-from BlockLabel import label
+import BlockLabel
 import instruments
-from instruments.AWGs import get_empty_channel_set
 
-from APSPattern import write_APS_file
-from APS2Pattern import write_APS2_file
-from TekPattern import write_Tek_file
-from mm import multimethod
 
 # global parameter libraries
 channelLib = {}
 instrumentLib = {}
 
-markerWFLib = {PatternUtils.TAZKey:np.zeros(1, dtype=np.bool), PatternUtils.markerHighKey:np.ones(1, dtype=np.bool) }
+def map_logical_to_physical(wires):
+    # construct a mapping of physical channels to lists of logical channels
+    # (there will be more than one logical channel if multiple logical
+    # channels share a physical channel)
+    physicalChannels = {}
+    for logicalChan in wires.keys():
+        physChan = logicalChan.physChan
+        if physChan not in physicalChannels:
+            physicalChannels[physChan] = [logicalChan]
+        else:
+            physicalChannels[physChan].append(logicalChan)
 
-def get_channel_label(chanKey):
-    ''' Takes in a channel key and returns a channel label '''
-    if type(chanKey) != tuple:
-        return chanKey.label
-    else:
-        return "".join([chan.label for chan in chanKey])
+    # loop through the physical channels
+    physicalWires = {}
+    for physChan, logicalChan in physicalChannels.items():
+        if len(logicalChan) > 1:
+            physicalWires[physChan] = merge_channels(wires, logicalChan)
+        else:
+            physicalWires[physChan] = wires[logicalChan[0]]
+
+    return physicalWires
+
+def merge_channels(wires, channels):
+    chan = channels[0]
+    mergedWire = [[] for _ in range(len(wires[chan]))]
+    shapeFunLib = {}
+    for ct, segment in enumerate(mergedWire):
+        entryIterators = [iter(wires[ch][ct]) for ch in channels]
+        while True:
+            try:
+                entries = [e.next() for e in entryIterators]
+                # control flow on any channel should pass thru
+                if any(isinstance(e, (ControlFlow.ControlInstruction, BlockLabel.BlockLabel)) for e in entries):
+                    # for the moment require uniform control flow so that we
+                    # can pull from the first channel
+                    assert all(e == entries[0] for e in entries), "Non-uniform control flow"
+                    segment.append(entries[0])
+                    continue
+                # at this point we have at least one waveform instruction
+                blocklength = pull_uniform_entries(entries, entryIterators)
+                newentry = copy(entries[0])
+                #TODO properly deal with constant pulses
+                newentry.amp = 1.0
+                newentry.isTimeAmp = all([e.isTimeAmp for e in entries])
+                if all([e.amp == 0 for e in entries]):
+                    newentry.amp = 0
+                else:
+                    assert np.count_nonzero([e.amp * e.channel.frequency for e in entries]) <= 1, "Unable to handle merging more than one non-zero entry with non-zero frequency."
+
+                #If there is a non-zero SSB frequency copy it to the new entry
+                nonZeroSSBChan = np.nonzero([e.amp * e.channel.frequency for e in entries])[0]
+                if nonZeroSSBChan:
+                    newentry.channel = entries[nonZeroSSBChan[0]].channel
+
+                newentry.phase = 0
+
+                pulsesHash = tuple([e.hashshape() for e in entries])
+                if pulsesHash not in shapeFunLib:
+                    # create closure to sum waveforms
+                    def sum_shapes(entries=entries, **kwargs):
+                        return reduce(operator.add, [e.amp * np.exp(1j*e.phase) * e.shape for e in entries])
+                    shapeFunLib[pulsesHash] = sum_shapes
+                newentry.shapeParams = {'shapeFun':shapeFunLib[pulsesHash], 'length':blocklength}
+                newentry.label = "*".join([e.label for e in entries])
+                segment.append(newentry)
 
 
-def setup_awg_channels(logicalChannels):
-    awgs = set([])
-    for chan in logicalChannels:
-        awgs.add(chan.AWG)
+            except StopIteration:
+                break
+    return mergedWire
 
-    data = {awg.label:get_empty_channel_set(awg) for awg in awgs}
-    for awgdata in data.values():
-        for chan in awgdata.keys():
-            awgdata[chan] = {'linkList': [], 'wfLib': {PatternUtils.TAZKey: np.zeros(1, dtype=np.complex)}}
-    return data
+def pull_uniform_entries(entries, entryIterators):
+    '''
+    Given entries from a set of logical channels (that share a physical
+    channel), pull enough entries from each channel so that the total pulse
+    length matches. e.g. if your entry data was like this:
+        ch1 : | A1 | B1 | C1 |      D1     | ...
+        ch2 : |      A2      |      B2     | ...
 
-def map_logical_to_physical(linkLists, wfLib):
-    physicalChannels = {chan: channelLib[get_channel_label(chan)].physChan.label for chan in linkLists.keys()}
-    awgData = setup_awg_channels(linkLists.keys())
+    and initially entries = [A1, A2], we would construct
+        A1* = A1 + B1 + C1
+    and update entries such that entries = [A1*, A2].
+    The function returns the resulting block length.
+    '''
+    numChan = len(entries)
+    iterDone = [False]*numChan #keep track of how many entry iterators are used up
+    ct = 0
+    while True:
+        #If we've used up all the entries on all the channels we're done
+        if all(iterDone):
+            raise StopIteration("Unable to find a uniform set of entries")
 
-    for chan in linkLists.keys():
-        awgName, awgChan = physicalChannels[chan].split('-')
-        awgData[awgName]['ch'+awgChan] = {'linkList': linkLists[chan], 'wfLib': wfLib[chan]}
+        #If all the entry lengths are the same we are finished
+        entryLengths = [e.length for e in entries]
+        if all(x==entryLengths[0] for x in entryLengths):
+            break
 
-    return awgData
+        #Otherwise try to concatenate on entries to match lengths
+        while entries[ct].length < max(e.length for e in entries):
+            # concatenate with following entry to make up the length difference
+            try:
+                nextentry = entryIterators[ct].next()
+            except StopIteration:
+                iterDone[ct] = True
 
-def channel_delay_map(awgData):
-    chanDelays = {}
-    # loop through all used IQkeys
-    for IQkey in [awgName + '-' + chanName[2:] for awgName, awg in awgData.items() for chanName in awg.keys()]:
-        chan = channelLib[IQkey]
-        chanDelays[IQkey] = chan.delay + chan.AWG.delay
+            entries[ct] = concatenate_entries(entries[ct], nextentry)
+
+        ct = (ct + 1) % numChan
+
+    return max(e.length for e in entries)
+
+def concatenate_entries(entry1, entry2):
+    newentry = copy(entry1)
+    # TA waveforms with the same amplitude can be merged with a just length update
+    # otherwise, need to concatenate the pulse shapes
+    if not (entry1.isTimeAmp and entry2.isTimeAmp and entry1.amp == entry2.amp and entry1.phase == (entry1.frameChange + entry2.phase)):
+        # otherwise, need to build a closure to stack them
+        def stack_shapes(entry1=entry1, entry2=entry2, **kwargs):
+            return np.hstack((entry1.amp * np.exp(1j*entry1.phase) * entry1.shape,
+                              entry2.amp * np.exp(1j*(entry1.frameChange + entry2.phase)) * entry2.shape))
+
+        newentry.isTimeAmp = False
+        newentry.shapeParams = {'shapeFun' : stack_shapes}
+        newentry.label = entry1.label + '+' + entry2.label
+    newentry.frameChange += entry2.frameChange
+    newentry.length = entry1.length + entry2.length
+    newentry.amp = 1.0
+
+    return newentry
+
+def generate_waveforms(physicalWires):
+    wfs = {ch : {} for ch in physicalWires.keys()}
+    for ch, wire in physicalWires.items():
+        for pulse in flatten(wire):
+            if not isinstance(pulse, PulseSequencer.Pulse):
+                continue
+            if pulse.hashshape() not in wfs[ch]:
+                if pulse.isTimeAmp:
+                    wfs[ch][pulse.hashshape()] = np.ones(1, dtype=np.complex)
+                else:
+                    wfs[ch][pulse.hashshape()] = pulse.shape
+    return wfs
+
+def pulses_to_waveforms(physicalWires):
+    wireOuts = {ch : [] for ch in physicalWires.keys()}
+    for ch, seqs in physicalWires.iteritems():
+        for seq in seqs:
+            wireOuts[ch].append([])
+            for pulse in seq:
+                if not isinstance(pulse, PulseSequencer.Pulse):
+                    wireOuts[ch][-1].append(pulse)
+                else:
+                    wf = Waveform(pulse)
+                    wireOuts[ch][-1].append(wf)
+    return wireOuts
+
+def channel_delay_map(physicalWires):
+    chanDelays = {chan : chan.delay + chan.AWG.delay for chan in physicalWires.keys()}
     return PatternUtils.normalize_delays(chanDelays)
 
-def compile_to_hardware(seqs, fileName, suffix='', alignMode="right"):
+def setup_awg_channels(physicalChannels):
+    awgs = set([])
+    for chan in physicalChannels:
+        awgs.add(chan.AWG)
+
+    data = {awg.label:awg.get_empty_channel_set() for awg in awgs}
+    for awgdata in data.values():
+        for chan in awgdata.keys():
+            awgdata[chan] = {'linkList': [], 'wfLib': {}, 'correctionT': np.identity(2)}
+    return data
+
+def bundle_wires(physWires, wfs):
+    awgData = setup_awg_channels(physWires.keys())
+    for chan in physWires.keys():
+        _, awgChan = chan.label.split('-')
+        awgChan = 'ch' + awgChan
+        awgData[chan.AWG.label][awgChan]['linkList'] = physWires[chan]
+        awgData[chan.AWG.label][awgChan]['wfLib'] = wfs[chan]
+        if hasattr(chan, 'correctionT'):
+            awgData[chan.AWG.label][awgChan]['correctionT'] = chan.correctionT
+    return awgData
+
+def collect_specializations(seqs):
+    '''
+    Collects function definitions for all targets of Call instructions
+    '''
+    targets = [x.target for x in flatten(seqs) if isinstance(x, ControlFlow.Call)]
+    funcDefs = []
+    for target in targets:
+        funcDefs += ControlFlow.qfunction_specialization(target)
+    return funcDefs
+
+def compile_to_hardware(seqs, fileName, suffix=''):
     '''
     Compiles 'seqs' to a hardware description and saves it to 'fileName'. Other inputs:
         suffix : string to append to end of fileName (e.g. with fileNames = 'test' and suffix = 'foo' might save to test-APSfoo.h5)
-        alignMode : 'left' or 'right' (default 'left')
     '''
 
-    #Add the digitizer trigger to measurements
-    PatternUtils.add_digitizer_trigger(seqs, channelLib['digitizerTrig'])
+    # Add the digitizer trigger to measurements
+    PatternUtils.add_digitizer_trigger(seqs)
 
     # Add gating/blanking pulses
     PatternUtils.add_gate_pulses(seqs)
@@ -101,65 +249,49 @@ def compile_to_hardware(seqs, fileName, suffix='', alignMode="right"):
     for seq in seqs:
         channels |= find_unique_channels(seq)
 
-    #Compile all the pulses/pulseblocks to linklists and waveform libraries
-    linkLists, wfLib = compile_sequences(seqs, channels)
+    # Compile all the pulses/pulseblocks to sequences of pulses and control flow
+    wireSeqs = compile_sequences(seqs, channels)
+
+    if not validate_linklist_channels(wireSeqs.keys()):
+        print "Compile to hardware failed"
+        return
 
     # apply gating constraints
-    for chan, LL in linkLists.items():
+    for chan, seq in wireSeqs.items():
         if isinstance(chan, Channels.LogicalMarkerChannel):
-            linkLists[chan] = PatternUtils.apply_gating_constraints(chan.physChan, LL)
-
+            wireSeqs[chan] = PatternUtils.apply_gating_constraints(chan.physChan, seq)
     # map logical to physical channels
-    awgData = map_logical_to_physical(linkLists, wfLib)
+    physWires = map_logical_to_physical(wireSeqs)
 
     # construct channel delay map
-    chanDelays = channel_delay_map(awgData)
+    delays = channel_delay_map(physWires)
 
-    # for each physical channel need to:
-    # 1) delay
-    # 2) apply SSB if necessary
-    # 3) mixer correct
-    for awgName, data in awgData.items():
-        for chanName, chanData in data.items():
-            if chanData:
-                # construct IQkey using existing convention
-                IQkey = awgName + '-' + chanName[2:]
-                chanObj = channelLib[IQkey]
+    # apply delays
+    for chan, wire in physWires.items():
+        PatternUtils.delay(wire, delays[chan])
 
-                # apply channel delay
-                PatternUtils.delay(chanData['linkList'], chanDelays[IQkey], chanObj.samplingRate)
+    # generate wf library (base shapes)
+    wfs = generate_waveforms(physWires)
 
-                # For quadrature channels, apply SSB and mixer correction
-                if isinstance(chanObj, Channels.PhysicalQuadratureChannel):
+    # replace Pulse objects with Waveforms
+    physWires = pulses_to_waveforms(physWires)
 
-                    #At this point we finally have the timing of all the pulses so we can apply SSB
-                    if hasattr(chanObj, 'SSBFreq') and abs(chanObj.SSBFreq) > 0:
-                        PatternUtils.apply_SSB(chanData['linkList'], chanData['wfLib'], chanObj.SSBFreq, chanObj.samplingRate)
+    # bundle wires on instruments
+    awgData = bundle_wires(physWires, wfs)
 
-                    PatternUtils.correctMixer(chanData['wfLib'], chanObj.correctionT)
-
-                #Remove unused waveforms
-                compress_wfLib(chanData['linkList'], chanData['wfLib'])
-
-    #Loop back through to fill empty channels and write to file
+    # convert to hardware formats
     fileList = []
     for awgName, data in awgData.items():
-        #If all the channels are empty then do not bother writing the file
-        if all([chan is None for chan in data.values()]):
-            continue
-
-        # convert to hardware formats
         # create the target folder if it does not exist
         targetFolder = os.path.split(os.path.normpath(os.path.join(config.AWGDir, fileName)))[0]
         if not os.path.exists(targetFolder):
             os.mkdir(targetFolder)
         fullFileName = os.path.normpath(os.path.join(config.AWGDir, fileName + '-' + awgName + suffix + instrumentLib[awgName].seqFileExt))
-
-        write_sequence_file(instrumentLib[awgName], data, fullFileName)
+        instrumentLib[awgName].write_sequence_file(data, fullFileName)
 
         fileList.append(fullFileName)
 
-    #Return the filenames we wrote
+    # Return the filenames we wrote
     return fileList
 
 def compile_sequences(seqs, channels=None):
@@ -168,144 +300,75 @@ def compile_sequences(seqs, channels=None):
     '''
     # all sequences should start with a WAIT
     for seq in seqs:
-        if seq[0] != ControlFlow.Wait():
+        if not isinstance(seq[0], ControlFlow.Wait):
             seq.insert(0, ControlFlow.Wait())
-    # last sequence should end with a GOTO back to the first sequence
-    if not (hasattr(seqs[-1][-1], 'instruction') and seqs[-1][-1].instruction == 'GOTO'):
-        seqs[-1].append(ControlFlow.Goto(label(seqs[0])))
+    # turn into a loop, by appending GOTO(0) at end of last sequence
+    if not isinstance(seqs[-1][-1], ControlFlow.Goto):
+        seqs[-1].append(ControlFlow.Goto(BlockLabel.label(seqs[0])))
+    # inject function definitions prior to sequences
+    funcDefs = collect_specializations(seqs)
+    if funcDefs:
+        # inject GOTO to jump over definitions
+        funcDefs.insert(0, ControlFlow.Goto(BlockLabel.label(seqs[0])))
+        seqs.insert(0, funcDefs)
 
-    resolve_offsets(seqs)
-
-    wfLib = {}
     # use seqs[0] as prototype in case we were not given a set of channels
-    miniLL, wfLib = compile_sequence(seqs[0], wfLib, channels)
-    linkLists = {chan: [LL] for chan, LL in miniLL.items()}
+    wires = compile_sequence(seqs[0], channels)
+    if not channels:
+        channels = set(wires.keys())
+    wireSeqs = {chan: [seq] for chan, seq in wires.items()}
     for seq in seqs[1:]:
-        miniLL, wfLib = compile_sequence(seq, wfLib, channels)
-        for chan in linkLists.keys():
-            linkLists[chan].append(miniLL[chan])
-
+        wires = compile_sequence(seq, channels)
+        for chan in wireSeqs.keys():
+            wireSeqs[chan].append(wires[chan])
 
     #Print a message so for the experiment we know how many sequences there are
     print('Compiled {} sequences.'.format(len(seqs)))
-    return linkLists, wfLib
+    return wireSeqs
 
-def compile_sequence(seq, wfLib={}, channels=None):
+def compile_sequence(seq, channels=None):
     '''
-    Converts a single sequence into a miniLL and waveform library.
-    Returns a single-entry list of a miniLL and the updated wfLib
+    Takes a list of control flow and pulses, and returns aligned blocks
+    separated into individual abstract channels (wires).
     '''
 
     #Find the set of logical channels used here and initialize them
     if not channels:
         channels = find_unique_channels(seq)
 
-    logicalLLs = {}
-    for chan in channels:
-        logicalLLs[chan] = []
-        if chan not in wfLib:
-            if isinstance(chan, Channels.LogicalMarkerChannel):
-                wfLib[chan] = markerWFLib
-            else:
-                wfLib[chan] = {PatternUtils.TAZKey: np.zeros(1, dtype=np.complex)}
-    carriedPhase = {ch: 0 for ch in channels}
+    wires = {chan: [] for chan in channels}
+
     for block in normalize(flatten(seq), channels):
-        # control flow instructions just need to broadcast to all channels
-        if isinstance(block, ControlFlow.ControlInstruction):
+        # labels and control flow instructions broadcast to all channels
+        if isinstance(block, (BlockLabel.BlockLabel, ControlFlow.ControlInstruction)):
             for chan in channels:
-                logicalLLs[chan] += [copy(block)]
+                wires[chan] += [copy(block)]
             continue
-        #Align the block
-        blockLength = block.maxPts
-        # drop length 0 blocks but push frame change onto next non-zero entry
-        if blockLength == 0:
-            carriedPhase = {ch: carriedPhase[ch]+block.pulses[ch].frameChange for ch in channels}
+        # drop length 0 blocks but push frame change onto previous entry
+        if block.length == 0:
+            for chan in channels:
+                if len(wires[chan]) > 0:
+                    wires[chan][-1] = copy(wires[chan][-1])
+                    wires[chan][-1].frameChange += block.pulses[chan].frameChange
+                else:
+                    warn("Dropping initial frame change")
             continue
+        # schedule the block
         for chan in channels:
-            # add aligned LL entry(ies) (if the block contains a composite pulse, may get back multiple waveforms and LL entries)
-            wfs, LLentries = align(block.label, block.pulses[chan], blockLength, block.alignment)
-            for wf in wfs:
-                if isinstance(chan, Channels.LogicalMarkerChannel):
-                    wf = wf.astype(np.bool)
-                if PatternUtils.hash_pulse(wf) not in wfLib:
-                    wfLib[chan][PatternUtils.hash_pulse(wf)] = wf
-            # Frame changes are then propagated through
-            logicalLLs[chan] += propagate_frame(LLentries, carriedPhase[chan])
-        carriedPhase = {ch: 0 for ch in channels}
+            # add aligned Pulses (if the block contains a composite pulse, may get back multiple pulses)
+            wires[chan] += schedule(chan, block.pulses[chan], block.length, block.alignment)
 
-    # loop through again to find phases, frame changes, and SSB modulation for quadrature channels
-    for chan in channels:
-        if not isinstance(chan, (Channels.Qubit, Channels.Measurement)):
-            continue
-        curFrame = 0
-        for entry in logicalLLs[chan]:
-            if isinstance(entry, ControlFlow.ControlInstruction):
-                continue
-            # frame update
-            shape = np.copy(wfLib[chan][entry.key])
-
-            # See if we can turn into a TA pair
-            # fragile: if you buffer a square pulse it will not be constant valued
-            if np.all(shape == shape[0]):
-                entry.isTimeAmp = True
-                shape = shape[:1]
-                # convert near zeros to PatternUtils.TAZKey
-                if abs(shape[0]) < 1e-6:
-                    entry.key = PatternUtils.TAZKey
-
-            #Rotate for phase and frame change (don't rotate zeros...)
-            if entry.key != PatternUtils.TAZKey:
-                shape *= np.exp(1j*(entry.phase+curFrame))
-                shapeHash = PatternUtils.hash_pulse(shape)
-                if shapeHash not in wfLib[chan]:
-                    wfLib[chan][shapeHash] = shape
-                entry.key = shapeHash
-            curFrame += entry.frameChange
-
-    return logicalLLs, wfLib
-
-def propagate_frame(entries, frame):
-    '''
-    Propagates a frame change through a list of LL entries, dropping zero length entries
-    '''
-    # The first LL entry picks up the carried phase.
-    entries[0].phase += frame
-    entries[0].frameChange += frame
-    # then push frame changes from zero length entries forward
-    for prevEntry, thisEntry in zip(entries, entries[1:]):
-        if prevEntry.length == 0:
-            thisEntry.phase += prevEntry.frameChange
-            thisEntry.frameChange += prevEntry.frameChange
-    # then drop zero length entries
-    for ct in reversed(range(len(entries))):
-        if entries[ct].length == 0:
-            del entries[ct]
-    return entries
-
-def compress_wfLib(seqs, wfLib):
-    '''
-    Helper function to remove unused waveforms from the library.
-    '''
-    usedKeys = set([PatternUtils.TAZKey, PatternUtils.markerHighKey])
-    for miniLL in seqs:
-        for entry in miniLL:
-            if isinstance(entry, LLWaveform):
-                usedKeys.add(entry.key)
-
-    unusedKeys = set(wfLib.keys()) - usedKeys
-    for key in unusedKeys:
-        del wfLib[key]
+    return wires
 
 def find_unique_channels(seq):
     channels = set([])
     for step in flatten(seq):
-        if isinstance(step, PulseSequencer.Pulse):
-            if isinstance(step.qubits, Channels.Channel):
-                channels |= set([step.qubits])
-            else:
-                channels |= set(step.qubits)
-        elif hasattr(step, 'pulses'):
-            channels |= set(step.pulses.keys())
+        if not hasattr(step, 'channel'):
+            continue
+        if isinstance(step.channel, Channels.Channel):
+            channels |= set([step.channel])
+        else:
+            channels |= set(step.channel)
     return channels
 
 def normalize(seq, channels=None):
@@ -321,43 +384,35 @@ def normalize(seq, channels=None):
 
     # inject Id's for PulseBlocks not containing every channel
     for block in filter(lambda x: isinstance(x, PulseSequencer.PulseBlock), seq):
+        blocklen = block.length
         emptyChannels = channels - set(block.pulses.keys())
         for ch in emptyChannels:
-            block.pulses[ch] = Id(ch, length=0)
+            block.pulses[ch] = Id(ch, length=blocklen)
     return seq
 
-@multimethod(instruments.AWGs.APS, dict, unicode)
-def write_sequence_file(awg, data, filename):
-    write_APS_file(data, filename)
-
-@multimethod(instruments.AWGs.Tek5014, dict, unicode)
-def write_sequence_file(awg, data, filename):
-    write_Tek_file(data, filename, 1)
-
-@multimethod(instruments.AWGs.APS2, dict, unicode)
-def write_sequence_file(awg, data, filename):
-    write_APS2_file(data, filename)
-
-class LLWaveform(object):
+class Waveform(object):
     '''
     IQ LL elements for quadrature mod channels.
     '''
     def __init__(self, pulse=None, label=None):
-        self.repeat = 1
         self.label = label
+        self.frequency = 0
         if pulse is None:
             self.key = None
+            self.amp = 0
             self.length = 0
             self.phase = 0
             self.frameChange = 0
             self.isTimeAmp = False
-            self.repeat = 1
         else:
-            self.key = PatternUtils.hash_pulse(pulse.shape)
-            self.length = pulse.length
+            self.key = pulse.hashshape()
+            self.amp = pulse.amp
+            self.length = pulse.shapeParams['length']
             self.phase = pulse.phase
             self.frameChange = pulse.frameChange
             self.isTimeAmp = pulse.isTimeAmp
+            if hasattr(pulse.channel, 'frequency'):
+                self.frequency = pulse.channel.frequency
 
     def __repr__(self):
         return self.__str__()
@@ -365,139 +420,58 @@ class LLWaveform(object):
     def __str__(self):
         labelPart = "{0}: ".format(self.label) if self.label else ""
         if self.isTimeAmp:
-            TA = 'HIGH' if self.key != PatternUtils.TAZKey else 'LOW'
-            return labelPart + "LLWaveform-TA(" + TA + ", " + str(self.length) + ")"
+            TA = 'HIGH' if self.amp != 0 else 'LOW'
+            return labelPart + "Waveform-TA(" + TA + ", " + str(self.length) + ")"
         else:
-            return labelPart + "LLWaveform(" + self.key[:6] + ", " + str(self.length) + ")"
+            return labelPart + "Waveform(" + str(self.key)[:6] + ", " + str(self.length) + ")"
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        return False
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash(frozenset(self.__dict__.iteritems()))
 
     @property
     def isZero(self):
-        return self.key == PatternUtils.TAZKey
+        return self.amp == 0
 
-    @property
-    def totLength(self):
-        return self.length*self.repeat
-
-def create_padding_LL(length=0):
-    tmpLL = LLWaveform()
-    tmpLL.isTimeAmp = True
-    tmpLL.key = PatternUtils.TAZKey
-    tmpLL.length = length
-    return tmpLL
-
-def align(label, pulse, blockLength, alignment, cutoff=12):
-    # check for composite pulses
-    if hasattr(pulse, 'pulses'):
-        entries = [LLWaveform(p) for p in pulse.pulses]
-        entries[0].label = label
-        shapes = [p.shape for p in pulse.pulses]
+def schedule(channel, pulse, blockLength, alignment):
+    '''
+    Converts a Pulse or a CompositePulses into an aligned sequence of Pulses
+    by injecting TAPulses before and/or after such that the resulting sequence
+    duration is `blockLength`.
+        alignment = "left", "right", or "center"
+    '''
+    # make everything look like a sequence
+    if isinstance(pulse, PulseSequencer.CompositePulse):
+        pulses = pulse.pulses
     else:
-        entries = [LLWaveform(pulse, label)]
-        shapes = [pulse.shape]
+        pulses = [pulse]
+
     padLength = blockLength - pulse.length
     if padLength == 0:
         # no padding element required
-        return shapes, entries
-    if (padLength < cutoff) and (alignment == "left" or alignment == "right"):
-        # pad the first/last shape on one side
-        if alignment == "left":
-            shapes[-1] = np.hstack((shapes[-1], np.zeros(padLength)))
-            entries[-1].key = PatternUtils.hash_pulse(shapes[-1])
-        else: #right alignment
-            shapes[0] = np.hstack((np.zeros(padLength), shapes[0]))
-            entries[0].key = PatternUtils.hash_pulse(shapes[0])
-    elif (padLength < 2*cutoff and alignment == "center"):
-        # pad the both sides of the shape(s)
-        if len(shapes) == 1:
-            shapes[0] = np.hstack(( np.zeros(np.floor(padLength/2)), shapes[0], np.zeros(np.ceil(padLength/2)) ))
-            entries[0].key = PatternUtils.hash_pulse(shapes[0])
-        else:
-            shapes[0] = np.hstack(( np.zeros(np.floor(padLength/2)), shapes[0]))
-            shapes[-1] = np.hstack(( np.zeroes(np.ceil(padLength/2)), shapes[-1]))
-            entries[0].key = PatternUtils.hash_pulse(shapes[0])
-            entries[-1].key = PatternUtils.hash_pulse(shapes[-1])
-    elif padLength == blockLength:
-        #Here we have a zero-length sequence which just needs to be expanded
-        entries[0].key = PatternUtils.TAZKey
-        entries[0].length = blockLength
-        shapes = [np.zeros(1, dtype=np.complex)]
-    else:
-        #split the entry into the shape and one or more TAZ
-        if alignment == "left":
-            padEntry = create_padding_LL(padLength)
-            entries = entries + [padEntry]
-        elif alignment == "right":
-            padEntry = create_padding_LL(padLength)
-            entries = [padEntry] + entries
-        else:
-            padEntry1 = create_padding_LL(np.floor(padLength/2))
-            padEntry2 = create_padding_LL(np.ceil(padLength/2))
-            entries = [padEntry1] + entries + [padEntry2]
-    return shapes, entries
+        return pulses
+    elif alignment == "left":
+        return pulses + [Id(channel, padLength)]
+    elif alignment == "right":
+        return [Id(channel, padLength)] + pulses
+    else: # center
+        return [Id(channel, padLength/2)] + pulses + [Id(channel, padLength/2)]
 
-def flatten_and_separate(seq):
-    '''
-    Given a (potentially nested) list of instructions, flatten the list into a
-    main sequence and a (flattened) list of branches
-    '''
-    branchSeqs = []
-    stack = []
-    idx = 0
-    # Walk through the sequence, pruning branches and putting them on a stack
-    while idx < len(seq):
-        node = seq[idx]
-        # 3 possibilities: have a plain node, have a nested list, or have a tuple of lists
-        if isinstance(node, tuple):
-            # treat the first element as the main branch and push the remaining elements on the stack
-            seq[idx:idx+1] = node[0] #insert the first element into seq
-            stack += list(node[1:])
-        elif isinstance(node, list):
-            seq[idx:idx+1] = node
-        else:
-            idx += 1
+def validate_linklist_channels(linklistChannels):
+    errors = []
+    channels = channelLib.channelDict
+    for channel in linklistChannels:
+        if channel.label not in channels.keys() and channel.label not in errors:
+            print "{0} not found in channel library".format(repr(channel))
+            errors.append(channel.label)
 
-    while len(stack) > 0:
-        node = stack.pop()
-        # same 3 possibilities as above
-        if isinstance(node, tuple):
-            # make the first element the new top entry on the stack
-            stack += list(node[1:])
-            stack.append(node[0])
-        elif isinstance(node, list):
-            # add list elements back to stack in reverse order (so first element is on "top")
-            stack += node[::-1]
-        else:
-            branchSeqs.append(node)
-
-    return seq, branchSeqs
-
-# from Stack Overflow: http://stackoverflow.com/questions/2158395/flatten-an-irregular-list-of-lists-in-python/2158532#2158532
-def flatten(l):
-    for el in l:
-        if isinstance(el, collections.Iterable) and not isinstance(el, basestring):
-            for sub in flatten(el):
-                yield sub
-        else:
-            yield el
-
-def resolve_offsets(seqs):
-    # create symbol look-up table
-    symbols = {}
-    for i, seq in enumerate(seqs):
-        for j, entry in enumerate(seq):
-            if entry.label and entry.label not in symbols:
-                symbols[entry.label] = (i, j)
-    # re-label targets with offsets
-    for seq in seqs:
-        for entry in seq:
-            if hasattr(entry, 'target') and entry.target and entry.target.offset != 0:
-                noOffsetLabel = copy(entry.target)
-                noOffsetLabel.offset = 0
-                baseidx = symbols[noOffsetLabel]
-                targetidx = (baseidx[0], baseidx[1]+entry.target.offset)
-                # targets are allowed to point beyond the end of the current sequence
-                while targetidx[1] >= len(seqs[targetidx[0]]):
-                    targetidx = (targetidx[0]+1, targetidx[1]-len(seqs[targetidx[0]]))
-                    assert targetidx[0] < len(seqs), "invalid target"
-                entry.target = label(seqs[targetidx[0]][targetidx[1]:])
-
+    if errors != []:
+        return False
+    return True

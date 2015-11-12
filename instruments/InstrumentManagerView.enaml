@@ -12,6 +12,10 @@ from AttenuatorsViews import AttenuatorsViewMap
 
 from DictManagerView import DictManagerView
 
+from ExpSettingsVal import is_valid_instrument_name
+
+from plugins import find_view_maps
+
 enamldef EmptyInstrView(Container):
 	attr instr
 
@@ -19,7 +23,7 @@ enamldef EmptyInstrView(Container):
 enamldef DefaultInstrView(GroupBox):
 	hug_width = 'medium'
 	attr instr
-	title := '{} ({})'.format(instr.name, instr.__class__.__name__)
+	title := '{} ({})'.format(instr.label, instr.__class__.__name__)
 	Form:
 		Label:
 			text = 'Address'
@@ -30,6 +34,10 @@ otherViewMap = {type(None):EmptyInstrView, Analysers.HP71000:DefaultInstrView, A
 otherViewMap.update(DigitizerViewMap.items())
 otherViewMap.update(DCSourcesViewMap.items())
 otherViewMap.update(AttenuatorsViewMap.items())
+
+# add plugins maps
+find_view_maps(Digitizers.Digitizer, otherViewMap)
+find_view_maps(AWGs.AWG, AWGViewMap)
 
 enamldef InstrumentManagerView(Container):
 	attr instrLib
@@ -42,6 +50,7 @@ enamldef InstrumentManagerView(Container):
 				dictManager = instrLib.sources
 				viewMap = MicrowaveSourceViewMap
 				modelName = 'uwSource'
+				labelValidator = is_valid_instrument_name
 		
 		Page:
 			title = "AWG's"
@@ -50,6 +59,7 @@ enamldef InstrumentManagerView(Container):
 				dictManager = instrLib.AWGs
 				viewMap = AWGViewMap
 				modelName = 'awg'
+				labelValidator = is_valid_instrument_name
 		
 		Page:
 			title = "Other"
@@ -58,6 +68,7 @@ enamldef InstrumentManagerView(Container):
 				dictManager = instrLib.others
 				viewMap = otherViewMap
 				modelName = 'instr'
+				labelValidator = is_valid_instrument_name
 
 enamldef InstrumentManagerWindow(Window): 
 	attr instrLib
