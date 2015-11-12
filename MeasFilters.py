@@ -54,9 +54,6 @@ class KernelIntegration(MeasFilter):
     kernel = Str('').tag(desc="Integration kernel vector.")
     bias = Float(0.0).tag(desc="Bias after integration.")
 
-# ignore the difference between DigitalHomodyneSS and DigitalHomodyne
-class DigitalHomodyneSS(DigitalHomodyne):
-    pass
     
 class Correlator(MeasFilter):
     filters = List()
