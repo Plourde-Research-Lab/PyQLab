@@ -1,40 +1,37 @@
 <div class="row pane">
 	<h1>Instruments</h1>
-<!-- 					<div role="tab panel">
-	    <ul class="nav nav-tabs" role="tablist">
-	        <li role="presentation" class="active">
-	            <a href="#uwavesource" aria-controls="home" role="tab" data-toggle="tab">Microwave Sources</a>
-	        </li>
-	        <li role="presentation">
-	            <a href="#awg" aria-controls="tab" role="tab" data-toggle="tab">AWGs</a>
-	        </li>
-	        <li role="presentation">
-	            <a href="#others" aria-controls="tab" role="tab" data-toggle="tab">Others</a>
-	        </li>
-	    </ul>
-	
-	    <div class="tab-content">
-	        <div role="ta" class="tab-pane active" id="uwavesource">
-	        	<p ng-repeat="instr in ctrl.microwaveSources()">{{instr.label}}</p>
-	        </div>
-	        <div role="ta" class="tab-pane" id="awg">
-	        	<p ng-repeat="instr in ctrl.AWGs()">{{instr.label}}</p>
-	        </div>
-	        <div role="ta" class="tab-pane" id="others">
-	        	<p ng-repeat="instr in ctrl.others()">{{instr.label}}</p>
-	        </div>
-	    </div> -->
-
 	   <tabset justified="true">
 	   		<tab heading="Microwave Sources">
-	   			<p ng-repeat="instr in ctrl.microwaveSources()">{{instr.label}}</p>
+	   			<!-- <p ng-repeat="instr in ctrl.microwaveSources()">{{instr.label}}</p> -->
+	   			<div class="col-lg-6">
+					<div ng-repeat="instr in instrs | filter: {x__module__: 'instruments.MicrowaveSources'}">
+						<span>
+							<input type="checkbox" ng-model="instr.selected">
+							<a ng-click="selectInstr(instr)">{{instr.label}}</a>
+						</span>
+					</div>
+				</div>
 	   		</tab>
 	   		<tab heading="AWGs">
-	   			<p ng-repeat="instr in ctrl.AWGs()">{{instr.label}}</p>
+	   			<div class="col-lg-6">
+					<div ng-repeat="instr in instrs | filter: {x__module__: 'instruments.AWGs'}">
+						<span>
+							<input type="checkbox" ng-model="instr.selected">
+							<a ng-click="selectInstr(instr)">{{instr.label}}</a>
+						</span>
+					</div>
+				</div>
 	   		</tab>
 
 	   		<tab heading="Others">
-	   			<p ng-repeat="instr in ctrl.others()">{{instr.label}}</p>
+	   			<div class="col-lg-6">
+					<div ng-repeat="instr in instrs">
+						<span>
+							<input type="checkbox" ng-model="instr.selected">
+							<a ng-click="selectInstr(instr)">{{instr.label}}</a>
+						</span>
+					</div>
+				</div>
 	   		</tab>
 	   </tabset>
 </div>

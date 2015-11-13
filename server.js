@@ -11,7 +11,7 @@ var bodyParser = require('body-parser');
 
 var app = express();
 
-app.set('port', process.env.PORT || 80);
+app.set('port', process.env.PORT || 3000);
 
 app.use(compress());
 // app.use(logger('dev'));

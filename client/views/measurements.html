@@ -1,4 +1,17 @@
 <div class="row pane">
-	<h1>Measurements</h1>
-	<p ng-repeat="meas in ctrl.measurements()">{{meas.label}}</p>
+    <h1>Measurements</h1>
+    <div class="col-lg-6">
+	    <div ng-repeat="meas in measurements">
+	        <span>
+				<input type="checkbox" ng-model="meas.selected">
+				<a ng-click="selectMeas(meas)">{{meas.label}}</a>
+			</span>
+	    </div>
+    </div>
+    <div class="col-lg-6">
+    	<h6>{{selectedMeas.label}} ({{selectedMeas.x__class__}})</h6>
+	    <form class="input">
+	            
+	    </form>
+    </div>
 </div>

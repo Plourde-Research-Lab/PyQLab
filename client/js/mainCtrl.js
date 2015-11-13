@@ -66,7 +66,19 @@ expSettingsApp.controller('mainCtrl', [
 
 	$scope.selectChan = function (channel) {
 		$scope.selectedChan = channel;
-	}
+	};
+
+	$scope.selectMeas = function (meas) {
+		$scope.selectedMeas = meas;
+	};
+
+	$scope.selectInstr = function (instr) {
+		$scope.selectedInstr = instr;
+	};
+
+	$scope.selectSweep = function (sweep) {
+		$scope.selectedSweep = sweep;
+	};
 
 	this.sweeps = function() {
 		return $scope.sweeps;

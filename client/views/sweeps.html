@@ -1,4 +1,16 @@
 <div class="row pane">
+<div class="row">
 	<h1>Sweeps</h1>
-	<p ng-repeat="sweep in ctrl.sweeps()">{{sweep.label}}</p>
+	<div class="col-lg-6" style="overflow-y:scroll;">
+		<div ng-repeat="sweep in sweeps">
+			<span>
+				<input type="checkbox" ng-model="sweep.selected">
+				<a ng-click="selectSweep(instr)">{{sweep.label}}</a>
+			</span>
+		</div>
+	</div>
+	</div>
+	<div class="row">
+		<h3>Number of Sweeps</h3>
+	</div>
 </div>

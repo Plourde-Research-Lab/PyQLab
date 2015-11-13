@@ -10,7 +10,6 @@
 						<span>
 							<input type="checkbox" ng-model="channel.selected">
 							<a ng-click="selectChan(channel)">{{channel.label}}</a>
-							<!-- <p>{{channel.selected}}</p> -->
 						</span>
 					</div>
 				</div>
@@ -19,8 +18,6 @@
 
 			<!-- Physical Channels -->
 			<tab heading="Logical">
-				<!-- <p ng-repeat="channel in ctrl.physicalChannels()">{{channel.label}}</p> -->
-				<!-- <div ui-view="channels.physicalQuadrature"></div> -->
 				<div class="col-lg-6">
 					<div ng-repeat="channel in channels | filter: {x__class__: 'LogicalMarkerChannel'}">
 						<span>
