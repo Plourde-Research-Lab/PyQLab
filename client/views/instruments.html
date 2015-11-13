@@ -4,7 +4,7 @@
 	   		<tab heading="Microwave Sources">
 	   			<!-- <p ng-repeat="instr in ctrl.microwaveSources()">{{instr.label}}</p> -->
 	   			<div class="col-lg-6">
-					<div ng-repeat="instr in instrs | filter: {x__module__: 'instruments.MicrowaveSources'}">
+					<div ng-repeat="instr in instrs | isMicrowaveSource">
 						<span>
 							<input type="checkbox" ng-model="instr.selected">
 							<a ng-click="selectInstr(instr)">{{instr.label}}</a>
@@ -14,7 +14,7 @@
 	   		</tab>
 	   		<tab heading="AWGs">
 	   			<div class="col-lg-6">
-					<div ng-repeat="instr in instrs | filter: {x__module__: 'instruments.AWGs'}">
+					<div ng-repeat="instr in instrs | isAWG">
 						<span>
 							<input type="checkbox" ng-model="instr.selected">
 							<a ng-click="selectInstr(instr)">{{instr.label}}</a>
@@ -25,7 +25,7 @@
 
 	   		<tab heading="Others">
 	   			<div class="col-lg-6">
-					<div ng-repeat="instr in instrs">
+					<div ng-repeat="instr in instrs | isOther">
 						<span>
 							<input type="checkbox" ng-model="instr.selected">
 							<a ng-click="selectInstr(instr)">{{instr.label}}</a>

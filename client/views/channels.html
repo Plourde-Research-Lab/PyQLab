@@ -3,10 +3,29 @@
 		<h1>Channels</h1>
 		<tabset justified="true">
 
+			<!-- Logical Channels -->
+			<tab heading="Logical">
+				<div class="col-lg-6">
+					<!-- <div ng-repeat="channel in channels | isLogical">
+						<span>
+							<input type="checkbox" ng-model="channel.selected">
+							<a ng-click="selectChan(channel)">{{channel.label}}</a>
+						</span>
+					</div> -->
+					<select class="form-control" ng-model="selected" size=7 ng-selected="selectChan(selected)">
+						<option ng-repeat="channel in channels | isLogical">
+							<!-- <input type="checkbox" ng-model="channel.selected"> -->
+							{{channel.label}}
+						</option>
+					</select>
+				</div>
+				<div ui-view="logicalChannels"></div>
+			</tab>
+
 			<!-- Physical Channels -->
 			<tab heading="Physical">
 				<div class="col-lg-6">
-					<div ng-repeat="channel in channels | filter: {x__class__: 'PhysicalQuadratureChannel'}">
+					<div ng-repeat="channel in channels | isPhysical">
 						<span>
 							<input type="checkbox" ng-model="channel.selected">
 							<a ng-click="selectChan(channel)">{{channel.label}}</a>
@@ -16,18 +35,6 @@
 				<div ui-view="physicalChannels"></div>
 			</tab>
 
-			<!-- Physical Channels -->
-			<tab heading="Logical">
-				<div class="col-lg-6">
-					<div ng-repeat="channel in channels | filter: {x__class__: 'LogicalMarkerChannel'}">
-						<span>
-							<input type="checkbox" ng-model="channel.selected">
-							<a ng-click="selectChan(channel)">{{channel.label}}</a>
-						</span>
-					</div>
-				</div>
-				<div ui-view="logicalChannels"></div>
-			</tab>
 		</tabset>
 	</div>
 </div>

@@ -1,9 +1,23 @@
 body.ng-scope {
-	font-family: -apple-system, "Helvetica Neue", "Lato";
+    font-family: -apple-system, "Helvetica Neue", "Lato";
+    /*background-color: gray;*/
 }
+
 .pane {
-	max-width: 40vw;
-	height: 50vh;
-	max-height: 50vh;
-	overflowy-y: scroll;
+    max-width: 40vw;
+    height: 50vh;
+    max-height: 50vh;
+    overflowy-y: scroll;
 }
+
+label {
+    display: inline-block;
+    /*width: 140px;*/
+    text-align: right;
+}
+
+input {
+	text-align: right;
+}
+
+​
