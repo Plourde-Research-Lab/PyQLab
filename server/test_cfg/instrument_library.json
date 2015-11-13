@@ -1,0 +1,22 @@
+{
+	"scope": {
+		"type": "AlazarATS9870",
+		"address": "1"
+	},
+	"BBNAPS1": {
+		"type": "APS",
+		"address": "A6001ixV"
+	},
+	"Source1": {
+		"type": "AgilentN5183A",
+		"address": "12"
+	},
+	"Source2": {
+		"type": "AgilentN5183A",
+		"address": "6"
+	},
+	"SpecAnalyzer1": {
+		"type": "HP71000",
+		"address": 18
+	}
+}

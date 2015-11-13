@@ -1,0 +1,9 @@
+body.ng-scope {
+	font-family: -apple-system;
+}
+.pane {
+	max-width: 40vw;
+	height: 50vh;
+	max-height: 50vh;
+	overflowy-y: scroll;
+}

@@ -1,0 +1,124 @@
+{
+  "CWMode": false, 
+  "instruments": {
+    "APS1": {
+      "address": "", 
+      "chan_1": {
+        "amplitude": 1.0, 
+        "enabled": true, 
+        "offset": 0.0
+      }, 
+      "chan_2": {
+        "amplitude": 1.0, 
+        "enabled": true, 
+        "offset": 0.0
+      }, 
+      "delay": 0.0, 
+      "deviceName": "APS2", 
+      "isMaster": true, 
+      "numChannels": 2, 
+      "samplingRate": 1200000000.0, 
+      "seqFile": "", 
+      "seqForce": true, 
+      "triggerInterval": 0.0001, 
+      "triggerSource": "Internal"
+    }, 
+    "APS2": {
+      "address": "", 
+      "chan_1": {
+        "amplitude": 1.0, 
+        "enabled": true, 
+        "offset": 0.0
+      }, 
+      "chan_2": {
+        "amplitude": 1.0, 
+        "enabled": true, 
+        "offset": 0.0
+      }, 
+      "delay": 0.0, 
+      "deviceName": "APS2", 
+      "isMaster": false, 
+      "numChannels": 2, 
+      "samplingRate": 1200000000.0, 
+      "seqFile": "", 
+      "seqForce": true, 
+      "triggerInterval": 0.0001, 
+      "triggerSource": "Internal"
+    }, 
+    "APS3": {
+      "address": "", 
+      "chan_1": {
+        "amplitude": 1.0, 
+        "enabled": true, 
+        "offset": 0.0
+      }, 
+      "chan_2": {
+        "amplitude": 1.0, 
+        "enabled": true, 
+        "offset": 0.0
+      }, 
+      "delay": 0.0, 
+      "deviceName": "APS2", 
+      "isMaster": false, 
+      "numChannels": 2, 
+      "samplingRate": 1200000000.0, 
+      "seqFile": "", 
+      "seqForce": true, 
+      "triggerInterval": 0.0001, 
+      "triggerSource": "Internal"
+    }, 
+    "APS4": {
+      "address": "", 
+      "chan_1": {
+        "amplitude": 1.0, 
+        "enabled": true, 
+        "offset": 0.0
+      }, 
+      "chan_2": {
+        "amplitude": 1.0, 
+        "enabled": true, 
+        "offset": 0.0
+      }, 
+      "delay": 0.0, 
+      "deviceName": "APS2", 
+      "isMaster": false, 
+      "numChannels": 2, 
+      "samplingRate": 1200000000.0, 
+      "seqFile": "", 
+      "seqForce": true, 
+      "triggerInterval": 0.0001, 
+      "triggerSource": "Internal"
+    }, 
+    "JPMCounter": {
+      "address": "COM6", 
+      "deviceName": "ArduinoCounter", 
+      "repititions": 100, 
+      "segments": 11
+    }
+  }, 
+  "measurements": {
+    "Counter": {
+      "channel": "1", 
+      "dataSource": "JPMCounter", 
+      "filterType": "CounterStream", 
+      "kernel": [], 
+      "plotMode": "normal", 
+      "recordsFilePath": "", 
+      "repititions": 100, 
+      "saveRecords": false, 
+      "saved": true, 
+      "segments": 11
+    }
+  }, 
+  "sweeps": {
+    "Segments": {
+      "axisLabel": "Time", 
+      "numPoints": 11, 
+      "order": 1, 
+      "start": 0.0, 
+      "step": 10.0, 
+      "stop": 100.0, 
+      "type": "SegmentNum"
+    }
+  }
+}

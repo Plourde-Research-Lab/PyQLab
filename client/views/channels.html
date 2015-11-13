@@ -1,0 +1,36 @@
+<div>
+	<div class="row pane">
+		<h1>Channels</h1>
+		<tabset justified="true">
+
+			<!-- Physical Channels -->
+			<tab heading="Physical">
+				<div class="col-lg-6">
+					<div ng-repeat="channel in channels | filter: {x__class__: 'PhysicalQuadratureChannel'}">
+						<span>
+							<input type="checkbox" ng-model="channel.selected">
+							<a ng-click="selectChan(channel)">{{channel.label}}</a>
+							<!-- <p>{{channel.selected}}</p> -->
+						</span>
+					</div>
+				</div>
+				<div ui-view="physicalChannels"></div>
+			</tab>
+
+			<!-- Physical Channels -->
+			<tab heading="Logical">
+				<!-- <p ng-repeat="channel in ctrl.physicalChannels()">{{channel.label}}</p> -->
+				<!-- <div ui-view="channels.physicalQuadrature"></div> -->
+				<div class="col-lg-6">
+					<div ng-repeat="channel in channels | filter: {x__class__: 'LogicalMarkerChannel'}">
+						<span>
+							<input type="checkbox" ng-model="channel.selected">
+							<a ng-click="selectChan(channel)">{{channel.label}}</a>
+						</span>
+					</div>
+				</div>
+				<div ui-view="logicalChannels"></div>
+			</tab>
+		</tabset>
+	</div>
+</div>

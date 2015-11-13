@@ -1,0 +1,111 @@
+{
+  "CWMode": false, 
+  "instruments": {
+    "BBNAPS1": {
+      "address": "A6001ixV", 
+      "chan_1": {
+        "amplitude": 1.0, 
+        "enabled": true, 
+        "offset": 0.0
+      }, 
+      "chan_2": {
+        "amplitude": 1.0, 
+        "enabled": true, 
+        "offset": 0.0
+      }, 
+      "chan_3": {
+        "amplitude": 1.0, 
+        "enabled": true, 
+        "offset": 0.0
+      }, 
+      "chan_4": {
+        "amplitude": 1.0, 
+        "enabled": true, 
+        "offset": 0.0
+      }, 
+      "delay": 0.0, 
+      "deviceName": "APS", 
+      "isMaster": true, 
+      "miniLLRepeat": 0, 
+      "numChannels": 4, 
+      "samplingRate": 1200000000.0, 
+      "seqFile": "C:/Users/Britton/Documents/BBN/awgs/foo_test_2-BBNAPS1.h5", 
+      "seqForce": true, 
+      "triggerInterval": 0.0001, 
+      "triggerSource": "Internal"
+    }, 
+    "Labbrick": {
+      "address": "COM3", 
+      "alc": false, 
+      "deviceName": "Labbrick64", 
+      "frequency": 5.0, 
+      "gateBuffer": 2e-08, 
+      "gateDelay": -6e-08, 
+      "gateMinWidth": 1e-07, 
+      "mod": false, 
+      "output": false, 
+      "power": 10.0, 
+      "pulse": true, 
+      "pulseSource": "External"
+    }, 
+    "Scope": {
+      "acquireMode": "averager", 
+      "address": "1", 
+      "averager": {
+        "nbrRoundRobins": 2000, 
+        "nbrSegments": 1, 
+        "nbrWaveforms": 1, 
+        "recordLength": 1024
+      }, 
+      "clockType": "ref", 
+      "deviceName": "AlazarATS9870", 
+      "horizontal": {
+        "delayTime": 0.0, 
+        "samplingRate": 100000000.0
+      }, 
+      "trigger": {
+        "triggerCoupling": "DC", 
+        "triggerLevel": 1.0, 
+        "triggerSlope": "rising", 
+        "triggerSource": "Ext"
+      }, 
+      "vertical": {
+        "bandwidth": "20MHz", 
+        "verticalCoupling": "AC", 
+        "verticalOffset": 0.0, 
+        "verticalScale": 1.0
+      }
+    }
+  }, 
+  "measurements": {
+    "M1": {
+      "IFfreq": 10000000.0, 
+      "bandwidth": 5000000.0, 
+      "boxCarStart": 0, 
+      "boxCarStop": 1000, 
+      "channel": 1, 
+      "childFilter": "", 
+      "dependent": false, 
+      "filterFilePath": "", 
+      "filterType": "DigitalHomodyne", 
+      "phase": 0.0, 
+      "plotMode": "quad", 
+      "plotScope": true, 
+      "recordsFilePath": "", 
+      "samplingRate": 250000000.0, 
+      "saveRecords": false
+    }
+  }, 
+  "sweeps": {
+    "Frequency": {
+      "axisLabel": "Frequency", 
+      "instr": "Labbrick", 
+      "numPoints": 101, 
+      "order": 1, 
+      "start": 7.0, 
+      "step": 0.01, 
+      "stop": 8.0, 
+      "type": "Frequency"
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "filterDict": {
+    "Counter": {
+      "channel": "1", 
+      "dataSource": "JPMCounter", 
+      "enabled": true, 
+      "label": "Counter", 
+      "plotMode": "normal", 
+      "recordsFilePath": "", 
+      "repititions": 100, 
+      "saveRecords": false, 
+      "saved": true, 
+      "segments": 11, 
+      "x__class__": "CounterStream", 
+      "x__module__": "MeasFilters"
+    }, 
+    "Demod": {
+      "IFfreq": 10000000.0, 
+      "bandwidth": 5000000.0, 
+      "dataSource": "Stream", 
+      "decimFactor1": 1, 
+      "decimFactor2": 1, 
+      "decimFactor3": 1, 
+      "enabled": false, 
+      "label": "Demod", 
+      "phase": 0.0, 
+      "plotMode": "amp/phase", 
+      "plotScope": false, 
+      "recordsFilePath": "", 
+      "samplingRate": 250000000.0, 
+      "saveRecords": false, 
+      "saved": true, 
+      "x__class__": "DigitalDemod", 
+      "x__module__": "MeasFilters"
+    }, 
+    "Integrate": {
+      "IFfreq": 10000000.0, 
+      "bias": 0.0, 
+      "boxCarStart": 1, 
+      "boxCarStop": 1, 
+      "dataSource": "Demod", 
+      "enabled": false, 
+      "kernel": "", 
+      "label": "Integrate", 
+      "plotMode": "amp/phase", 
+      "plotScope": false, 
+      "samplingRate": 250000000.0, 
+      "saved": true, 
+      "simpleKernel": true, 
+      "x__class__": "KernelIntegration", 
+      "x__module__": "MeasFilters"
+    }, 
+    "Stream": {
+      "channel": "1", 
+      "dataSource": "JPMCounter", 
+      "enabled": false, 
+      "label": "Stream", 
+      "plotMode": "amp/phase", 
+      "plotScope": false, 
+      "recordsFilePath": "", 
+      "saveRecords": false, 
+      "saved": true, 
+      "x__class__": "RawStream", 
+      "x__module__": "MeasFilters"
+    }
+  }, 
+  "x__class__": "MeasFilterLibrary", 
+  "x__module__": "MeasFilters"
+}

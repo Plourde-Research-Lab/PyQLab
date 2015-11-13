@@ -1,0 +1,19 @@
+- 16:36:48.000 INFO: Opened connection to device 0 (Serial: A6001ixV)
+- 16:36:55.662 INFO: Resetting instrument
+- 16:36:55.662 INFO: Found force: 0 bitFile version: 0x1ff PLL status: 0x1
+- 16:36:55.662 INFO: Setting up VCX0
+- 16:36:55.662 INFO: Setting up PLL
+- 16:37:03.273 WARNING: FPGAs did not set DONE bits after programming, attempting to continue.
+- 16:37:12.853 WARNING: FPGAs did not set DONE bits after programming, attempting to continue.
+- 16:37:12.915 INFO: Running channel sync on FPGA 1
+- 16:37:12.947 INFO: Testing for DAC clock phase sync
+- 16:37:12.368 INFO: Sync test complete
+- 16:37:12.368 INFO: Running channel sync on FPGA 2
+- 16:37:12.383 INFO: Testing for DAC clock phase sync
+- 16:37:12.446 INFO: Sync test complete
+- 16:37:12.446 INFO: Setting up DAC 0
+- 16:37:12.508 INFO: Setting up DAC 1
+- 16:37:12.571 INFO: Setting up DAC 2
+- 16:37:12.633 INFO: Setting up DAC 3
+- 16:37:13.695 INFO: Clearing all channel data for APS 0
+- 17:33:28.058 INFO: Closed connection to device 0 (Serial: A6001ixV)

@@ -1,0 +1,139 @@
+{
+  "channelDict": {
+    "BBNAPS1-12": {
+      "AWG": "BBNAPS1", 
+      "IChannel": "ch1", 
+      "QChannel": "ch2", 
+      "SSBFreq": -100000000.0, 
+      "ampFactor": 1.0236, 
+      "delay": 0.0, 
+      "enabled": true, 
+      "gateChan": "BBNAPS1-1m1", 
+      "generator": "BottomAgilentE8257D", 
+      "label": "BBNAPS1-12", 
+      "phaseSkew": -3.64, 
+      "x__class__": "PhysicalQuadratureChannel", 
+      "x__module__": "QGL.Channels"
+    }, 
+    "BBNAPS1-1m1": {
+      "AWG": "BBNAPS1", 
+      "delay": 1e-07, 
+      "enabled": true, 
+      "label": "BBNAPS1-1m1", 
+      "x__class__": "PhysicalMarkerChannel", 
+      "x__module__": "QGL.Channels"
+    }, 
+    "BBNAPS1-2m1": {
+      "AWG": "BBNAPS1", 
+      "delay": 0.0, 
+      "enabled": true, 
+      "label": "BBNAPS1-2m1", 
+      "x__class__": "PhysicalMarkerChannel", 
+      "x__module__": "QGL.Channels"
+    }, 
+    "BBNAPS1-34": {
+      "AWG": "BBNAPS1", 
+      "IChannel": "ch3", 
+      "QChannel": "ch4", 
+      "SSBFreq": -19000000.0, 
+      "ampFactor": 1.0, 
+      "delay": 0.0, 
+      "enabled": true, 
+      "gateChan": "BBNAPS1-3m1", 
+      "generator": "TopAgilentE8257D", 
+      "label": "BBNAPS1-34", 
+      "phaseSkew": -1.31, 
+      "x__class__": "PhysicalQuadratureChannel", 
+      "x__module__": "QGL.Channels"
+    }, 
+    "BBNAPS1-3m1": {
+      "AWG": "BBNAPS1", 
+      "delay": -1e-07, 
+      "enabled": true, 
+      "label": "BBNAPS1-3m1", 
+      "x__class__": "PhysicalMarkerChannel", 
+      "x__module__": "QGL.Channels"
+    }, 
+    "BBNAPS1-4m1": {
+      "AWG": "BBNAPS1", 
+      "delay": 2.2e-07, 
+      "enabled": true, 
+      "label": "BBNAPS1-4m1", 
+      "x__class__": "PhysicalMarkerChannel", 
+      "x__module__": "QGL.Channels"
+    }, 
+    "M-q1": {
+      "autodyneFreq": 0.0, 
+      "enabled": true, 
+      "label": "M-q1", 
+      "measType": "autodyne", 
+      "physChan": "BBNAPS1-34", 
+      "pulseParams": {
+        "amp": 1.0, 
+        "buffer": 2e-09, 
+        "length": 5e-06, 
+        "shapeFun": "tanh", 
+        "sigma": 1e-09
+      }, 
+      "x__class__": "Measurement", 
+      "x__module__": "QGL.Channels"
+    }, 
+    "digitizerTrig": {
+      "enabled": true, 
+      "label": "digitizerTrig", 
+      "physChan": "BBNAPS1-2m1", 
+      "pulseParams": {
+        "amp": 1.0, 
+        "length": 1e-09, 
+        "shapeFun": "square"
+      }, 
+      "x__class__": "LogicalMarkerChannel", 
+      "x__module__": "QGL.Channels"
+    }, 
+    "q1": {
+      "enabled": true, 
+      "label": "q1", 
+      "physChan": "BBNAPS1-12", 
+      "pulseParams": {
+        "buffer": 3e-08, 
+        "dragScaling": 2.97, 
+        "length": 1.2e-07, 
+        "pi2Amp": 0.5, 
+        "piAmp": 1.0, 
+        "shapeFun": "gaussian", 
+        "sigma": 3e-09
+      }, 
+      "x__class__": "Qubit", 
+      "x__module__": "QGL.Channels"
+    }, 
+    "q2": {
+      "enabled": false, 
+      "label": "q2", 
+      "physChan": "BBNAPS1-12", 
+      "pulseParams": {
+        "buffer": 2e-09, 
+        "dragScaling": 1.0, 
+        "length": 4e-08, 
+        "pi2Amp": 0.5, 
+        "piAmp": 1.0, 
+        "shapeFun": "drag"
+      }, 
+      "x__class__": "Qubit", 
+      "x__module__": "QGL.Channels"
+    }, 
+    "slaveTrig": {
+      "enabled": true, 
+      "label": "slaveTrig", 
+      "physChan": "BBNAPS1-4m1", 
+      "pulseParams": {
+        "amp": 1.0, 
+        "length": 5e-06, 
+        "shapeFun": "square"
+      }, 
+      "x__class__": "LogicalMarkerChannel", 
+      "x__module__": "QGL.Channels"
+    }
+  }, 
+  "x__class__": "ChannelLibrary", 
+  "x__module__": "QGL.Channels"
+}

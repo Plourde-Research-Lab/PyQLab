@@ -1,0 +1,102 @@
+## Physical Quadrature Channel
+
+AWG
+	AWG List
+
+Source
+	uwaveSource List
+
+Delay
+	float input
+
+Amp Factor
+	float input
+
+Phase Skew (deg.)
+	float input
+
+SSB Frequency
+	float input
+
+
+
+_____________________________
+## Physical Marker Channel
+
+Delay
+	float
+
+Gate Buffer
+	float
+
+Min Width
+	float
+
+AWG
+	AWG List
+
+______________________________
+## Logical Measurement
+
+Type
+	Measurement Type List
+
+Autodyne Frequency
+	float
+
+Physical Channel
+	Physical Channel List
+
+Gate Channel
+	Physical Marker List
+
+amp
+	float
+buffer
+	float
+cutoff
+	float
+length
+	float
+shapeFun
+	shapeFun List
+sigma
+	float
+
+_________________________________
+## Logical Qubit
+
+Physical Channel
+	Physical Channel List
+
+Gate Channel
+	Physical Marker List
+
+buffer
+	float
+cutoff
+	float
+dragScaling
+	float
+length
+	float
+pi2amp
+	float
+piamp
+	float
+shapeFun
+	shapeFun List
+sigma
+	float
+
+_____________________________________
+## Logical Marker
+
+Physical Channel
+	Physical Channel List
+
+length
+	float
+
+shapeFun
+	shapeFun List

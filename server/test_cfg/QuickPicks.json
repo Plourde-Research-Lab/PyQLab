@@ -1,0 +1,248 @@
+{
+	"RabiAmp" : {
+		"seqDir" : "Rabi",
+		"seqFile" : "Rabi",
+		"sweeps" : {
+			"SegmentNum" : {
+				"axisLabel" : "Pulse Amp.",
+				"start" : 0,
+				"step" : 0.02,
+				"stop" : 1.0
+			}
+		},
+		"sweepOrder" : ["SegmentNum"],
+		"nbrSegments" : 51
+	},
+	"Ramsey" : {
+		"seqDir" : "Ramsey",
+		"seqFile" : "Ramsey",
+		"sweeps" : {
+			"SegmentNumWithCals" : {
+				"axisLabel" : "Delay",
+				"start" : 0,
+				"stop" : 80000,
+				"step" : 1600,
+				"numPoints" : 51,
+				"numCals" : 4
+			}
+		},
+		"sweepOrder" : ["SegmentNumWithCals"],
+		"nbrSegments" : 55
+	},
+	"Echo" : {
+		"seqDir" : "Echo",
+		"seqFile" : "Echo",
+		"sweeps" : {
+			"SegmentNumWithCals" : {
+				"axisLabel" : "Delay",
+				"start" : 0,
+				"stop" : 80000,
+				"numPoints" : 51,
+				"numCals" : 4
+			}
+		},
+		"sweepOrder" : ["SegmentNumWithCals"],
+		"nbrSegments" : 55
+	},
+	"EchoCR" : {
+		"seqDir" : "EchoCR",
+		"seqFile" : "EchoCR",
+		"sweeps" : {
+			"SegmentNumWithCals" : {
+				"axisLabel" : "Pulse Top Length",
+				"start" : 80,
+				"stop" : 670,
+				"numPoints" : 60,
+				"numCals": 8
+			}
+		},
+		"sweepOrder" : ["SegmentNumWithCals"],
+		"nbrSegments" : 68
+	},
+	"EchoCRph" : {
+		"seqDir" : "EchoCR",
+		"seqFile" : "EchoCR",
+		"sweeps" : {
+			"SegmentNumWithCals" : {
+				"axisLabel" : "Pulse Top Length",
+				"start" : 0,
+				"stop" : 720,
+				"numPoints" : 120,
+				"numCals": 8
+			}
+		},
+		"sweepOrder" : ["SegmentNumWithCals"],
+		"nbrSegments" : 128
+	},
+	"T1" : {
+		"seqDir" : "T1",
+		"seqFile" : "T1",
+		"sweeps" : {
+			"SegmentNumWithCals" : {
+				"axisLabel" : "Delay",
+				"start" : 0,
+				"stop" : 200000,
+				"numPoints" : 51,
+				"numCals" : 4
+			}
+		},
+		"sweepOrder" : ["SegmentNumWithCals"],
+		"nbrSegments" : 55
+	},
+	"RabiWidthFreq": {
+		"seqDir" : "RabiWidth",
+		"seqFile" : "RabiWidth",
+		"sweeps" : {
+			"SegmentNum" : {
+				"axisLabel" : "Delay",
+				"start" : 0,
+				"step" : 5,
+				"stop" : 500
+			},
+			"Frequency": {
+				"axisLabel": "Drive Frequency (GHz)",
+				"start": 4.795,
+				"step": 0.0005,
+				"stop": 4.805
+			}
+		},
+		"sweepOrder" : ["Frequency", "SegmentNum"],
+		"nbrSegments" : 101
+	},
+	"PiRabi" : {
+		"seqDir" : "PiRabi",
+		"seqFile" : "PiRabi",
+		"sweeps" : {
+			"Attenuation": {
+				"axisLabel": "Attenuation",
+				"start": "0.0",
+				"stop": "20.0",
+				"step": "0.5"
+			},
+			"SegmentNumWithCals" : {
+				"axisLabel" : "Pulse Top Length",
+				"start" : 100,
+				"stop" : 1120,
+				"numPoints" : 60
+			}
+		},
+		"sweepOrder" : ["Attenuation", "SegmentNumWithCals"],
+		"nbrSegments" : 68
+	},
+	"MAP" : {
+		"seqDir" : "MAP",
+		"seqFile" : "MAP",
+		"sweeps" : {
+				"SegmentNumWithCals" : {
+				"axisLabel" : "Pulse Top Length",
+				"start" : 100,
+				"stop" : 1120,
+				"numPoints" : 52,
+				"numCals" : 8
+			}
+		},
+		"sweepOrder" : ["Attenuation", "SegmentNumWithCals"],
+		"nbrSegments" : 60 
+	},
+	"StateTomo" : {
+		"seqDir" : "StateTomo",
+		"seqFile" : "StateTomo",
+		"sweeps" : {
+			"SegmentNumWithCals" : {
+				"axisLabel" : "Experiment",
+				"start" : 1,
+				"stop" : 36,
+				"numPoints" : 36,
+				"numCals" : 8
+			}
+		},
+		"sweepOrder" : ["SegmentNumWithCals"],
+		"nbrSegments" : 44
+	},
+	"ProcessTomo" : {
+		"seqDir" : "ProcessTomo",
+		"seqFile" : "ProcessTomo",
+		"sweeps" : {
+			"AWGSequence" : {
+				"axisLabel" : "AWGSequence",
+				"start" : 1,
+				"stop" : 36,
+				"step" : 1
+			},
+			"SegmentNumWithCals" : {
+				"axisLabel" : "Experiment",
+				"start" : 1,
+				"stop" : 36,
+				"numPoints" : 36,
+				"numCals" : 8
+			}
+		},
+		"sweepOrder" : ["AWGSequence", "SegmentNumWithCals"],
+		"nbrSegments" : 44
+	},
+	"PulsedSpec": {
+		"seqDir" : "Spec",
+		"seqFile" : "Spec",
+		"sweeps" : {
+			"Frequency": {
+				"axisLabel": "Drive Frequency (GHz)",
+				"start": 4.795,
+				"step": 0.0002,
+				"stop": 4.805
+			}
+		},
+		"sweepOrder" : ["CavityFreq"],
+		"nbrSegments" : 1
+	},
+	"PiRamsey": {
+		"seqDir" : "PiRamsey",
+		"seqFile" : "PiRamsey",
+		"sweeps" : {
+			"SegmentNumWithCals": {
+				"axisLabel": "Delay",
+				"start": 40,
+				"step": 20,
+				"stop": 3980,
+				"numPoints": "198",
+				"numCals": 8
+			}
+		},
+		"sweepOrder" : ["SegmentNumWithCals"],
+		"nbrSegments" : 206
+	},
+	"DDRabi": {
+		"seqDir" : "RabiWidth",
+		"seqFile" : "DDrabi",
+		"sweeps" : {
+			"Attenuation": {
+				"axisLabel": "Attenuation",
+				"start": "0.0",
+				"stop": "20.0",
+				"step": "0.5"
+			},
+			"SegmentNum": {
+				"axisLabel": "Delay",
+				"start": 100,
+				"step": 20,
+				"stop": 60
+			}
+		},
+		"sweepOrder" : ["Attenuation", "SegmentNum"],
+		"nbrSegments" : 26
+	},
+	"RB": {
+		"seqDir" : "RB",
+		"seqFile" : "RB",
+		"sweeps" : {
+			"SegmentNumWithCals" : {
+				"axisLabel" : "Experiment",
+				"start" : 1,
+				"stop" : 288,
+				"numPoints" : 288,
+				"numCals" : 4
+			}
+		},
+		"sweepOrder" : ["SegmentNumWithCals"],
+		"nbrSegments" : 292
+	}
+}

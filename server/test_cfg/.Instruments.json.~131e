@@ -1,0 +1,332 @@
+{
+  "instrDict": {
+    "APS21": {
+      "address": "192.168.2.2", 
+      "channels": [
+        {
+          "amplitude": 0.5, 
+          "enabled": true, 
+          "label": "", 
+          "offset": 0.016, 
+          "x__class__": "AWGChannel", 
+          "x__module__": "instruments.AWGs"
+        }, 
+        {
+          "amplitude": 0.5, 
+          "enabled": true, 
+          "label": "", 
+          "offset": -0.0085, 
+          "x__class__": "AWGChannel", 
+          "x__module__": "instruments.AWGs"
+        }
+      ], 
+      "delay": 0.0, 
+      "enabled": true, 
+      "isMaster": true, 
+      "label": "APS21", 
+      "numChannels": 2, 
+      "samplingRate": 1200000000.0, 
+      "seqFile": "C:/Users/Britton/Documents/BBN/awgs/T1/T1-APS21.h5", 
+      "seqForce": true, 
+      "triggerInterval": 5e-05, 
+      "triggerSource": "Internal", 
+      "x__class__": "APS2", 
+      "x__module__": "instruments.AWGs"
+    }, 
+    "APS22": {
+      "address": "192.168.2.3", 
+      "channels": [
+        {
+          "amplitude": 0.5, 
+          "enabled": true, 
+          "label": "", 
+          "offset": -0.0307, 
+          "x__class__": "AWGChannel", 
+          "x__module__": "instruments.AWGs"
+        }, 
+        {
+          "amplitude": 0.5, 
+          "enabled": true, 
+          "label": "", 
+          "offset": -0.0336, 
+          "x__class__": "AWGChannel", 
+          "x__module__": "instruments.AWGs"
+        }
+      ], 
+      "delay": 0.0, 
+      "enabled": true, 
+      "isMaster": false, 
+      "label": "APS22", 
+      "numChannels": 2, 
+      "samplingRate": 1200000000.0, 
+      "seqFile": "C:/Users/Britton/Documents/BBN/awgs/T1/T1-APS22.h5", 
+      "seqForce": true, 
+      "triggerInterval": 0.001, 
+      "triggerSource": "External", 
+      "x__class__": "APS2", 
+      "x__module__": "instruments.AWGs"
+    }, 
+    "APS23": {
+      "address": "192.168.2.4", 
+      "channels": [
+        {
+          "amplitude": 0.5, 
+          "enabled": true, 
+          "label": "", 
+          "offset": 0.0, 
+          "x__class__": "AWGChannel", 
+          "x__module__": "instruments.AWGs"
+        }, 
+        {
+          "amplitude": 0.5, 
+          "enabled": true, 
+          "label": "", 
+          "offset": 0.0, 
+          "x__class__": "AWGChannel", 
+          "x__module__": "instruments.AWGs"
+        }
+      ], 
+      "delay": 0.0, 
+      "enabled": false, 
+      "isMaster": false, 
+      "label": "APS23", 
+      "numChannels": 2, 
+      "samplingRate": 1200000000.0, 
+      "seqFile": "C:/Users/Britton/Documents/BBN/awgs/JPM/JPM-APS23.h5", 
+      "seqForce": true, 
+      "triggerInterval": 0.001, 
+      "triggerSource": "External", 
+      "x__class__": "APS2", 
+      "x__module__": "instruments.AWGs"
+    }, 
+    "APS24": {
+      "address": "192.168.2.5", 
+      "channels": [
+        {
+          "amplitude": 1.0, 
+          "enabled": true, 
+          "label": "", 
+          "offset": 0.0, 
+          "x__class__": "AWGChannel", 
+          "x__module__": "instruments.AWGs"
+        }, 
+        {
+          "amplitude": 1.0, 
+          "enabled": true, 
+          "label": "", 
+          "offset": 0.0, 
+          "x__class__": "AWGChannel", 
+          "x__module__": "instruments.AWGs"
+        }
+      ], 
+      "delay": 0.0, 
+      "enabled": false, 
+      "isMaster": false, 
+      "label": "APS24", 
+      "numChannels": 2, 
+      "samplingRate": 1200000000.0, 
+      "seqFile": "", 
+      "seqForce": true, 
+      "triggerInterval": 0.0001, 
+      "triggerSource": "Internal", 
+      "x__class__": "APS2", 
+      "x__module__": "instruments.AWGs"
+    }, 
+    "AgilentMXG": {
+      "address": "30", 
+      "alc": true, 
+      "enabled": false, 
+      "frequency": 4.706, 
+      "gateBuffer": 2e-08, 
+      "gateDelay": -6e-08, 
+      "gateMinWidth": 1e-07, 
+      "label": "AgilentMXG", 
+      "mod": false, 
+      "output": false, 
+      "power": 0.0, 
+      "pulse": false, 
+      "pulseSource": "External", 
+      "x__class__": "AgilentN5183A", 
+      "x__module__": "instruments.MicrowaveSources"
+    }, 
+    "BBNAPS1": {
+      "address": "A6001ixV", 
+      "channels": [
+        {
+          "amplitude": 0.5, 
+          "enabled": true, 
+          "label": "", 
+          "offset": -0.2, 
+          "x__class__": "AWGChannel", 
+          "x__module__": "instruments.AWGs"
+        }, 
+        {
+          "amplitude": 0.5, 
+          "enabled": true, 
+          "label": "", 
+          "offset": -0.1061, 
+          "x__class__": "AWGChannel", 
+          "x__module__": "instruments.AWGs"
+        }, 
+        {
+          "amplitude": 0.5, 
+          "enabled": true, 
+          "label": "", 
+          "offset": 0.0137, 
+          "x__class__": "AWGChannel", 
+          "x__module__": "instruments.AWGs"
+        }, 
+        {
+          "amplitude": 0.5, 
+          "enabled": true, 
+          "label": "", 
+          "offset": -0.0184, 
+          "x__class__": "AWGChannel", 
+          "x__module__": "instruments.AWGs"
+        }
+      ], 
+      "delay": 0.0, 
+      "enabled": false, 
+      "isMaster": true, 
+      "label": "BBNAPS1", 
+      "miniLLRepeat": 0, 
+      "numChannels": 4, 
+      "samplingRate": 1200000000.0, 
+      "seqFile": "C:/Users/Britton/Documents/BBN/awgs/Cavity/Cavity-BBNAPS1.h5", 
+      "seqForce": true, 
+      "triggerInterval": 0.0001, 
+      "triggerSource": "External", 
+      "x__class__": "APS", 
+      "x__module__": "instruments.AWGs"
+    }, 
+    "BottomAgilentE8257D": {
+      "address": "7", 
+      "alc": true, 
+      "enabled": true, 
+      "frequency": 6.2115, 
+      "gateBuffer": 2e-08, 
+      "gateDelay": -6e-08, 
+      "gateMinWidth": 1e-07, 
+      "label": "BottomAgilentE8257D", 
+      "mod": false, 
+      "output": true, 
+      "power": 18.0, 
+      "pulse": false, 
+      "pulseSource": "External", 
+      "x__class__": "AgilentE8257D", 
+      "x__module__": "instruments.MicrowaveSources"
+    }, 
+    "CavityAttenuator": {
+      "address": "COM4", 
+      "ch1Attenuation": 15.0, 
+      "ch2Attenuation": 0.0, 
+      "ch3Attenuation": 22.0, 
+      "enabled": true, 
+      "label": "CavityAttenuator", 
+      "x__class__": "DigitalAttenuator", 
+      "x__module__": "instruments.Attenuators"
+    }, 
+    "DCSource": {
+      "address": "19", 
+      "channel": 3, 
+      "enabled": true, 
+      "label": "DCSource", 
+      "mode": "voltage", 
+      "output": true, 
+      "outputRange": 0.001, 
+      "value": 1.8, 
+      "x__class__": "SIM928", 
+      "x__module__": "instruments.DCSources"
+    }, 
+    "Labbrick": {
+      "address": "2224", 
+      "alc": false, 
+      "enabled": false, 
+      "frequency": 9.0, 
+      "gateBuffer": 2e-08, 
+      "gateDelay": -6e-08, 
+      "gateMinWidth": 1e-07, 
+      "label": "Labbrick", 
+      "mod": false, 
+      "output": true, 
+      "power": 4.0, 
+      "pulse": false, 
+      "pulseSource": "External", 
+      "x__class__": "Labbrick64", 
+      "x__module__": "instruments.MicrowaveSources"
+    }, 
+    "PhaseMatrix": {
+      "address": "COM11", 
+      "alc": false, 
+      "enabled": true, 
+      "frequency": 5.98, 
+      "gateBuffer": 2e-08, 
+      "gateDelay": -6e-08, 
+      "gateMinWidth": 1e-07, 
+      "label": "PhaseMatrix", 
+      "mod": false, 
+      "output": true, 
+      "power": 13.0, 
+      "pulse": false, 
+      "pulseSource": "External", 
+      "x__class__": "PhaseMatrixFSW0020", 
+      "x__module__": "instruments.MicrowaveSources"
+    }, 
+    "SA": {
+      "address": "COM10", 
+      "enabled": true, 
+      "label": "SA", 
+      "x__class__": "SpectrumAnalyzer", 
+      "x__module__": "instruments.Analysers"
+    }, 
+    "Scope": {
+      "acquireMode": "averager", 
+      "address": "1", 
+      "bandwidth": "Full", 
+      "clockType": "ref", 
+      "delay": 0.0, 
+      "enabled": true, 
+      "label": "Scope", 
+      "nbrRoundRobins": 1000, 
+      "nbrSegments": 105, 
+      "nbrWaveforms": 1, 
+      "recordLength": 4096, 
+      "samplingRate": 1000000000.0, 
+      "triggerCoupling": "DC", 
+      "triggerLevel": 0.04, 
+      "triggerSlope": "rising", 
+      "triggerSource": "Ext", 
+      "verticalCoupling": "AC", 
+      "verticalOffset": 0.0, 
+      "verticalScale": 0.04, 
+      "x__class__": "AlazarATS9870", 
+      "x__module__": "instruments.Digitizers"
+    }, 
+    "SpecAnalyzer": {
+      "address": "21", 
+      "enabled": false, 
+      "label": "SpecAnalyzer", 
+      "x__class__": "HP8563E", 
+      "x__module__": "instruments.Analysers"
+    }, 
+    "TopAgilentE8257D": {
+      "address": "6", 
+      "alc": true, 
+      "enabled": true, 
+      "frequency": 8.24515, 
+      "gateBuffer": 2e-08, 
+      "gateDelay": -6e-08, 
+      "gateMinWidth": 1e-07, 
+      "label": "TopAgilentE8257D", 
+      "mod": false, 
+      "output": true, 
+      "power": 18.0, 
+      "pulse": false, 
+      "pulseSource": "External", 
+      "x__class__": "AgilentE8257D", 
+      "x__module__": "instruments.MicrowaveSources"
+    }
+  }, 
+  "x__class__": "InstrumentLibrary", 
+  "x__module__": "instruments.InstrumentManager"
+}

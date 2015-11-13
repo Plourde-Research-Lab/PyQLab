@@ -1,0 +1,169 @@
+{
+  "instrDict": {
+    "APS": {
+      "address": "A6001ixV", 
+      "channels": [
+        {
+          "amplitude": 1.0, 
+          "enabled": true, 
+          "label": "", 
+          "offset": 0.0, 
+          "x__class__": "AWGChannel", 
+          "x__module__": "instruments.AWGs"
+        }, 
+        {
+          "amplitude": 1.0, 
+          "enabled": true, 
+          "label": "", 
+          "offset": 0.0, 
+          "x__class__": "AWGChannel", 
+          "x__module__": "instruments.AWGs"
+        }, 
+        {
+          "amplitude": 0.5, 
+          "enabled": true, 
+          "label": "", 
+          "offset": 0.0168, 
+          "x__class__": "AWGChannel", 
+          "x__module__": "instruments.AWGs"
+        }, 
+        {
+          "amplitude": 0.5, 
+          "enabled": true, 
+          "label": "", 
+          "offset": -0.0014, 
+          "x__class__": "AWGChannel", 
+          "x__module__": "instruments.AWGs"
+        }
+      ], 
+      "delay": 0.0, 
+      "enabled": true, 
+      "isMaster": true, 
+      "label": "APS", 
+      "miniLLRepeat": 0, 
+      "numChannels": 4, 
+      "samplingRate": 1200000000.0, 
+      "seqFile": "C:/Users/Caleb/Development/BBN/AWGS/Cav/Cav-APS.h5", 
+      "seqForce": true, 
+      "triggerInterval": 0.01, 
+      "triggerSource": "Internal", 
+      "x__class__": "APS", 
+      "x__module__": "instruments.AWGs"
+    }, 
+    "Attenuator": {
+      "address": "COM10", 
+      "ch1Attenuation": 0.0, 
+      "ch2Attenuation": 0.0, 
+      "ch3Attenuation": 0.0, 
+      "enabled": false, 
+      "label": "Attenuator", 
+      "x__class__": "DigitalAttenuator", 
+      "x__module__": "instruments.Attenuators"
+    }, 
+    "JPMCounter": {
+      "address": "COM6", 
+      "enabled": true, 
+      "label": "JPMCounter", 
+      "repititions": 5, 
+      "segments": 11, 
+      "x__class__": "Counter", 
+      "x__module__": "instruments.Counters"
+    }, 
+    "Labbrick": {
+      "address": "1898", 
+      "alc": false, 
+      "enabled": false, 
+      "frequency": 9.01, 
+      "gateBuffer": 2e-08, 
+      "gateDelay": -6e-08, 
+      "gateMinWidth": 1e-07, 
+      "label": "Labbrick", 
+      "mod": false, 
+      "output": true, 
+      "power": 0.0, 
+      "pulse": false, 
+      "pulseSource": "Internal", 
+      "refSource": "External", 
+      "x__class__": "Labbrick", 
+      "x__module__": "instruments.MicrowaveSources"
+    }, 
+    "MXG": {
+      "address": "30", 
+      "alc": false, 
+      "enabled": false, 
+      "frequency": 10.0, 
+      "gateBuffer": 2e-08, 
+      "gateDelay": -6e-08, 
+      "gateMinWidth": 1e-07, 
+      "label": "MXG", 
+      "mod": false, 
+      "output": true, 
+      "power": 13.0, 
+      "pulse": false, 
+      "pulseSource": "Internal", 
+      "x__class__": "AgilentN5183A", 
+      "x__module__": "instruments.MicrowaveSources"
+    }, 
+    "PhaseMatrix": {
+      "address": "COM11", 
+      "alc": false, 
+      "enabled": false, 
+      "frequency": 9.0, 
+      "gateBuffer": 2e-08, 
+      "gateDelay": -6e-08, 
+      "gateMinWidth": 1e-07, 
+      "label": "PhaseMatrix", 
+      "mod": false, 
+      "output": true, 
+      "power": 10.0, 
+      "pulse": false, 
+      "pulseSource": "External", 
+      "refSource": "External", 
+      "x__class__": "PhaseMatrix", 
+      "x__module__": "instruments.MicrowaveSources"
+    }, 
+    "Scope": {
+      "acquireMode": "digitizer", 
+      "address": "1", 
+      "bandwidth": "20MHz", 
+      "clockType": "ref", 
+      "delay": 0.0, 
+      "enabled": false, 
+      "label": "Scope", 
+      "nbrRoundRobins": 1, 
+      "nbrSegments": 1, 
+      "nbrWaveforms": 1, 
+      "recordLength": 1024, 
+      "samplingRate": 100000000.0, 
+      "triggerCoupling": "AC", 
+      "triggerLevel": 0.0, 
+      "triggerSlope": "rising", 
+      "triggerSource": "A", 
+      "verticalCoupling": "AC", 
+      "verticalOffset": 0.0, 
+      "verticalScale": 1.0, 
+      "x__class__": "AgilentAP240", 
+      "x__module__": "instruments.Digitizers"
+    }, 
+    "SpectrumAnalyzer": {
+      "address": "COM9", 
+      "enabled": false, 
+      "label": "SpectrumAnalyzer", 
+      "x__class__": "SpectrumAnalyzer", 
+      "x__module__": "instruments.Analysers"
+    }, 
+    "Tektronix": {
+      "address": "USB0::0x0699::0x0347::C033963::0::INSTR", 
+      "amp": 2.0, 
+      "channel": "2", 
+      "enabled": true, 
+      "label": "Tektronix", 
+      "output": false, 
+      "width": 50.0, 
+      "x__class__": "TekAFG3022B", 
+      "x__module__": "instruments.PulseGenerators"
+    }
+  }, 
+  "x__class__": "InstrumentLibrary", 
+  "x__module__": "instruments.InstrumentManager"
+}

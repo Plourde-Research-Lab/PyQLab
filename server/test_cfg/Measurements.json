@@ -1,0 +1,50 @@
+{
+  "filterDict": {
+    "M1_DigitalDemod": {
+      "IFfreq": 10000000.0, 
+      "bandwidth": 7000000.0, 
+      "dataSource": "M1_raw", 
+      "decimFactor1": 4, 
+      "decimFactor2": 4, 
+      "decimFactor3": 1, 
+      "enabled": true, 
+      "label": "M1_DigitalDemod", 
+      "phase": 1.5707963267948966, 
+      "plotMode": "quad", 
+      "plotScope": true, 
+      "recordsFilePath": "", 
+      "samplingRate": 500000000.0, 
+      "saveRecords": false, 
+      "saved": true, 
+      "x__class__": "DigitalDemod", 
+      "x__module__": "MeasFilters"
+    }, 
+    "M1_KernalIntegrator": {
+      "bias": 0.0, 
+      "dataSource": "M1_DigitalDemod", 
+      "enabled": true, 
+      "kernel": "np.ones(128, dtype=np.complex128)", 
+      "label": "M1_KernalIntegrator", 
+      "plotMode": "quad", 
+      "plotScope": true, 
+      "saved": true, 
+      "x__class__": "KernelIntegration", 
+      "x__module__": "MeasFilters"
+    }, 
+    "M1_raw": {
+      "channel": "1", 
+      "dataSource": "Scope", 
+      "enabled": true, 
+      "label": "M1_raw", 
+      "plotMode": "amp/phase", 
+      "plotScope": true, 
+      "recordsFilePath": "", 
+      "saveRecords": false, 
+      "saved": true, 
+      "x__class__": "RawStream", 
+      "x__module__": "MeasFilters"
+    }
+  }, 
+  "x__class__": "MeasFilterLibrary", 
+  "x__module__": "MeasFilters"
+}

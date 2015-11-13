@@ -1,0 +1,10 @@
+<div class="col-lg-6">
+    <h6>{{selectedChan.label}} ({{selectedChan.x__class__}})</h6>
+    <form class="input">
+            <label>AWG</label>
+            <select class="form-control" ng-model="selectedChan.AWG">
+            	<option>{{selectedChan.AWG}}</option>
+            	<option ng-repeat="instr in instrs | filter: {x__module__: 'instruments.AWGs'}">{{instr.label}}</option>
+            </select>
+    </form>
+</div>

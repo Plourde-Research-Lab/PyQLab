@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Experiment Settings</title>
+
+	<link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css">
+	<link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+	<link rel="stylesheet" type="text/css" href="css/styles.css">
+
+	<script type="text/javascript" src="bower_components/jquery/dist/jquery.js"></script>
+
+	<script type="text/javascript" src="bower_components/angular/angular.js"></script>
+	<script type="text/javascript" src="bower_components/angular-route/angular-route.js"></script>
+	<script type="text/javascript" src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+	<script type="text/javascript" src="js/app.js"></script>
+	<script type="text/javascript" src="js/mainCtrl.js"></script>
+	
+	<base href="/">
+</head>
+<body ng-app="expSettingsApp" ng-controller="mainCtrl as ctrl">
+<!-- <body ng-controller="mainCtrl as ctrl"> -->
+	<div class="container">
+	<!-- <p>{{ctrl.microwaveSources()}}</p> -->
+		<div class="row">
+		<div class="col-lg-12">
+		<div class="row">
+
+			<!-- Channels -->
+			<div class="col-lg-6" ui-view="channels"></div>
+
+			<!-- Instruments -->
+			<div class="col-lg-6" ui-view="instruments"></div>
+		
+		</div>
+		</div>
+		<div class="row">
+		
+			<!-- Measurements -->
+			<div class="col-lg-6" ui-view="measurements"></div>
+
+			<!-- Sweeps -->
+			<div class="col-lg-6 pane" ui-view="sweeps"></div>					
+		</div>
+		</div>
+		</div>
+	</div>
+
+	<script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.12.0.js"></script>
+	<script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+
+	<script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
+
+</body>
+</html>

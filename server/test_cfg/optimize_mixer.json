@@ -1,0 +1,44 @@
+{
+	"InstrParams": {
+		"SA": {
+			"LOsource": "PhaseMatrix",
+			"span": 1000000,
+			"resolution_bw": 100000,
+			"sweep_points": 600,
+			"sweep_mode": "continuous",
+			"video_averaging": 1
+		}
+	},
+	"ExpParams": {
+		"specAnalyzer": "SA",
+		"Search": {
+			"max_offset": 0.5,
+			"max_steps": 50,
+			"min_step_size": 0.001,
+			"power_threshold": 2,
+			"distance_threshold": 0.002,
+			"local_search": 0
+		},
+		"SSBAWGFile": "C:\\Users\\Britton\\My Documents\\BBN\\awgs\\MixerCal\\MixerCal.awg",
+		"SSBFreq": 10000000,
+		"Sweep": {
+			"offset": {
+				"start": -0.2,
+				"stop": 0.2,
+				"numPoints": 50
+			},
+			"ampFactor": {
+				"start": 0.65,
+				"stop": 1.15,
+				"numPoints": 65
+			},
+			"phaseSkew": {
+				"start": -30,
+				"stop": 20,
+				"numPoints": 60
+			}
+		},
+		"verbose": 0,
+		"SoftwareDevelopmentMode": 0
+	}
+}

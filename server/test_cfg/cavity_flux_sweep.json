@@ -1,0 +1,144 @@
+{
+  "CWMode": false, 
+  "instruments": {
+    "AgilentMXG": {
+      "address": "12", 
+      "alc": true, 
+      "deviceName": "AgilentN5183A", 
+      "frequency": 4.178, 
+      "gateBuffer": 2e-08, 
+      "gateDelay": -6e-08, 
+      "gateMinWidth": 1e-07, 
+      "mod": false, 
+      "output": true, 
+      "power": 13.0, 
+      "pulse": false, 
+      "pulseSource": "External"
+    }, 
+    "BBNAPS1": {
+      "address": "A6001ixV", 
+      "chan_1": {
+        "amplitude": 1.0, 
+        "enabled": true, 
+        "offset": -0.0082
+      }, 
+      "chan_2": {
+        "amplitude": 1.0, 
+        "enabled": true, 
+        "offset": -0.0276
+      }, 
+      "chan_3": {
+        "amplitude": 1.0, 
+        "enabled": true, 
+        "offset": 0.0262
+      }, 
+      "chan_4": {
+        "amplitude": 1.0, 
+        "enabled": true, 
+        "offset": 0.0572
+      }, 
+      "delay": 0.0, 
+      "deviceName": "APS", 
+      "isMaster": true, 
+      "miniLLRepeat": 0, 
+      "numChannels": 4, 
+      "samplingRate": 1200000000.0, 
+      "seqFile": "C:/Users/Britton/Documents/BBN/awgs/spectroscopy-BBNAPS1.h5", 
+      "seqForce": true, 
+      "triggerInterval": 0.0001, 
+      "triggerSource": "External"
+    }, 
+    "DCSource": {
+      "address": "19", 
+      "channel": 3, 
+      "deviceName": "SIM928", 
+      "mode": "voltage", 
+      "output": true, 
+      "range": 0.001, 
+      "value": -2.0
+    }, 
+    "Scope": {
+      "acquireMode": "averager", 
+      "address": "1", 
+      "averager": {
+        "nbrRoundRobins": 3000, 
+        "nbrSegments": 1, 
+        "nbrWaveforms": 1, 
+        "recordLength": 2048
+      }, 
+      "clockType": "ref", 
+      "deviceName": "AlazarATS9870", 
+      "horizontal": {
+        "delayTime": 0.0, 
+        "samplingRate": 1000000000.0
+      }, 
+      "trigger": {
+        "triggerCoupling": "DC", 
+        "triggerLevel": 1.0, 
+        "triggerSlope": "rising", 
+        "triggerSource": "Ext"
+      }, 
+      "vertical": {
+        "bandwidth": "Full", 
+        "verticalCoupling": "DC", 
+        "verticalOffset": 0.0, 
+        "verticalScale": 1.0
+      }
+    }, 
+    "TopAgilentE8257D": {
+      "address": "6", 
+      "alc": true, 
+      "deviceName": "AgilentE8257D", 
+      "frequency": 8.60312, 
+      "gateBuffer": 2e-08, 
+      "gateDelay": -6e-08, 
+      "gateMinWidth": 1e-07, 
+      "mod": false, 
+      "output": true, 
+      "power": 16.0, 
+      "pulse": false, 
+      "pulseSource": "External"
+    }
+  }, 
+  "measurements": {
+    "M1": {
+      "IFfreq": 10000000.0, 
+      "bandwidth": 1000000.0, 
+      "boxCarStart": 500, 
+      "boxCarStop": 1700, 
+      "channel": 2, 
+      "childFilter": "", 
+      "dependent": false, 
+      "filterFilePath": "", 
+      "filterType": "DigitalHomodyne", 
+      "phase": -1.9198621771937625, 
+      "plotMode": "quad", 
+      "plotScope": false, 
+      "recordsFilePath": "", 
+      "samplingRate": 1000000000.0, 
+      "saveRecords": false
+    }
+  }, 
+  "sweeps": {
+    "DC": {
+      "axisLabel": "Voltage", 
+      "instr": "DCSource", 
+      "numPoints": 26, 
+      "order": 1, 
+      "start": -2.0, 
+      "step": 0.2, 
+      "stop": 3.0, 
+      "type": "DC"
+    }, 
+    "Frequency": {
+      "axisLabel": "Frequency", 
+      "instr": "AgilentMXG", 
+      "numPoints": 2001, 
+      "order": 2, 
+      "start": 3.0, 
+      "step": 0.001, 
+      "stop": 5.0, 
+      "type": "Frequency"
+    }
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "sweepDict": {
+    "Amplitude": {
+      "axisLabel": "Ampl.", 
+      "channel": "1&2", 
+      "enabled": true, 
+      "instr": "APS21", 
+      "label": "Amplitude", 
+      "mode": "Amp.", 
+      "numPoints": 11, 
+      "order": 1, 
+      "start": 0.1, 
+      "step": 0.04, 
+      "stop": 0.5, 
+      "x__class__": "AWGChannel", 
+      "x__module__": "Sweeps"
+    }, 
+    "Attenuation": {
+      "axisLabel": "Attenuation (dB)", 
+      "channel": 3, 
+      "enabled": true, 
+      "instr": "CavityAttenuator", 
+      "label": "Attenuation", 
+      "numPoints": 11, 
+      "order": 1, 
+      "start": 1.0, 
+      "step": 0.5, 
+      "stop": 6.0, 
+      "x__class__": "Attenuation", 
+      "x__module__": "Sweeps"
+    }, 
+    "Cavity": {
+      "axisLabel": "Frequency", 
+      "enabled": true, 
+      "instr": "TopAgilentE8257D", 
+      "label": "Cavity", 
+      "numPoints": 301, 
+      "order": 1, 
+      "start": 6.9615, 
+      "step": 5.000000000000189e-06, 
+      "stop": 6.963, 
+      "x__class__": "Frequency", 
+      "x__module__": "Sweeps"
+    }, 
+    "DC": {
+      "axisLabel": "Voltage", 
+      "enabled": true, 
+      "instr": "DCSource", 
+      "label": "DC", 
+      "numPoints": 51, 
+      "order": 1, 
+      "start": -5.0, 
+      "step": 0.2, 
+      "stop": 5.0, 
+      "x__class__": "DC", 
+      "x__module__": "Sweeps"
+    }, 
+    "Frequency": {
+      "axisLabel": "Frequency", 
+      "enabled": true, 
+      "instr": "BottomAgilentE8257D", 
+      "label": "Frequency", 
+      "numPoints": 2001, 
+      "order": 1, 
+      "start": 3.5, 
+      "step": 0.00025, 
+      "stop": 4.0, 
+      "x__class__": "Frequency", 
+      "x__module__": "Sweeps"
+    }, 
+    "GeneratorPower": {
+      "axisLabel": "Power (dBm)", 
+      "enabled": true, 
+      "instr": "AgilentMXG", 
+      "label": "GeneratorPower", 
+      "numPoints": 11, 
+      "order": 1, 
+      "start": -10.0, 
+      "step": 1.0, 
+      "stop": 0.0, 
+      "units": "dBm", 
+      "x__class__": "Power", 
+      "x__module__": "Sweeps"
+    }, 
+    "HeterodyneFrequency": {
+      "axisLabel": "frequency", 
+      "diffFreq": 0.019, 
+      "enabled": true, 
+      "instr1": "TopAgilentE8257D", 
+      "instr2": "BottomAgilentE8257D", 
+      "label": "HeterodyneFrequency", 
+      "numPoints": 101, 
+      "order": 2, 
+      "start": 8.0, 
+      "step": 0.00019999999999999573, 
+      "stop": 8.02, 
+      "x__class__": "HeterodyneFrequency", 
+      "x__module__": "Sweeps"
+    }, 
+    "Repeat": {
+      "axisLabel": "Repeats", 
+      "enabled": true, 
+      "label": "Repeat", 
+      "numRepeats": 1000, 
+      "order": 1, 
+      "x__class__": "Repeat", 
+      "x__module__": "Sweeps"
+    }, 
+    "SegmentNumWithCals": {
+      "axisLabel": "time", 
+      "enabled": true, 
+      "label": "SegmentNumWithCals", 
+      "numCals": 4, 
+      "numPoints": 201, 
+      "order": 1, 
+      "start": 0.0, 
+      "step": 500.0, 
+      "stop": 100000.0, 
+      "x__class__": "SegmentNumWithCals", 
+      "x__module__": "Sweeps"
+    }, 
+    "Segments": {
+      "axisLabel": "Time", 
+      "enabled": true, 
+      "label": "Segments", 
+      "numPoints": 101, 
+      "order": 1, 
+      "start": 0.0, 
+      "step": 10.0, 
+      "stop": 1000.0, 
+      "x__class__": "SegmentNum", 
+      "x__module__": "Sweeps"
+    }
+  }, 
+  "sweepOrder": [
+    "Frequency"
+  ], 
+  "x__class__": "SweepLibrary", 
+  "x__module__": "Sweeps"
+}
