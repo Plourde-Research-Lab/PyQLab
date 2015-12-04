@@ -17,7 +17,7 @@ class JPM(LogicalChannel):
         
 class JPMMeasurement(LogicalChannel):
     """docstring for JPMMeasurement"""
-    pulseParams = Dict(default={'frequency': 5e6, 'length': .2e-6, 'amp': 1.0, 'shapeFun':PulseShapes.tanh, 'buffer':0.0, 'cutoff':2, 'sigma':1e-9})
+    pulseParams = Dict(default={'frequency': 5e6, 'length': 2e-6, 'amp': 1.0, 'shapeFun':PulseShapes.tanh, 'buffer':0.0, 'cutoff':2, 'sigma':1e-9})
     gateChan = Instance((unicode, LogicalMarkerChannel))
 
     def __init__(self, **kwargs):
