@@ -33,4 +33,9 @@ enamldef PulseGeneratorForm(GroupBox):
 		FloatField:
 			value := instr.amp
 			tool_tip = instr.get_member('amp').metadata['desc']
+		Label:
+			text = 'Delay (us)'
+		FloatField:
+			value := instr.delay
+			tool_tip = instr.get_member('delay').metadata['desc']
 PulseGeneratorsViewMap = {PulseGenerators.PulseGenerator:PulseGeneratorForm}

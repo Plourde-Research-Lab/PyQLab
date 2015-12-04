@@ -362,6 +362,12 @@ enamldef PulseSweepForm(GroupBox):
         IntField:
             value := sweep.numPoints
         Label: 
+            text = 'Instrument'
+        ComboBox:
+            index << possibleInstrs.index(sweep.instr) if (possibleInstrs and sweep.instr) else 0
+            index :: sweep.instr = possibleInstrs[index]
+            items << [item for item in possibleInstrs]
+        Label: 
             text = 'Mode'
         EnumComboBox:
             items = ['amp', 'width']

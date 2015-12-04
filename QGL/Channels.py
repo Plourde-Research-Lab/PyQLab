@@ -96,7 +96,7 @@ class PhysicalChannel(Channel):
 
 class LogicalChannel(Channel):
     '''
-    The main class from which we will generate sequences. 
+    The main class from which we will generate sequences.
     At some point it needs to be assigned to a physical channel.
     '''
     #During initilization we may just have a string reference to the channel
@@ -113,7 +113,7 @@ class PhysicalMarkerChannel(PhysicalChannel):
     '''
     gateBuffer = Float(0.0).tag(desc="How much extra time should be added onto the beginning of a gating pulse")
     gateMinWidth = Float(0.0).tag(desc="The minimum marker pulse width")
-        
+
 class PhysicalQuadratureChannel(PhysicalChannel):
     '''
     Something used to implement a standard qubit channel with two analog channels and a microwave gating channel.
@@ -154,9 +154,9 @@ class Qubit(LogicalChannel):
 
 class Measurement(LogicalChannel):
     '''
-    A class for measurement channels. 
+    A class for measurement channels.
     Measurments are special because they can be different types:
-    autodyne which needs an IQ pair or hetero/homodyne which needs just a marker channel. 
+    autodyne which needs an IQ pair or hetero/homodyne which needs just a marker channel.
     '''
     measType = Enum('autodyne','homodyne').tag(desc='Type of measurment (autodyne, homodyne)')
     autodyneFreq = Float()
@@ -177,7 +177,7 @@ class Measurement(LogicalChannel):
 #         super(JPM, self).__init__(**kwargs)
 #         if self.gateChan is None:
 #             self.gateChan = LogicalMarkerChannel(label=kwargs['label']+'-gate')
-        
+
 # class JPMMeasurement(LogicalChannel):
 #     """docstring for JPMMeasurement"""
 #     pulseParams = Dict(default={'Drive Offset (Hz)': 5e6, 'Length (s)': .2e-6, 'shapeFun':PulseShapes.tanh, 'buffer':0.0, 'cutoff':2, 'sigma':1e-9})
@@ -187,7 +187,7 @@ class Measurement(LogicalChannel):
 #         super(JPMMeasurement, self).__init__(**kwargs)
 #         if self.gateChan is None:
 #             self.gateChan = LogicalMarkerChannel(label=kwargs['label']+'-gate')
-        
+
 
 def QubitFactory(label, **kwargs):
     ''' Return a saved qubit channel or create a new one. '''
@@ -202,20 +202,6 @@ def MeasFactory(label, measType='autodyne', **kwargs):
         return Compiler.channelLib[label]
     else:
         return Measurement(label=label, measType=measType, **kwargs)
-
-# def JPMFactory(label, **kwargs):
-#     '''Return a saved JPM channel or create a new one. '''
-#     if Compiler.channelLib and label in Compiler.channelLib and isinstance(Compiler.channelLib[label], JPM):
-#         return Compiler.channelLib[label]
-#     else:
-#         return JPM(label=label, **kwargs)
-
-# def JPMMeasFactory(label, **kwargs):
-#     ''' Return a saved JPMMeasurement channel or create a new one. '''
-#     if Compiler.channelLib and label in Compiler.channelLib and isinstance(Compiler.channelLib[label], JPMMeasurement):
-#         return Compiler.channelLib[label]
-#     else:
-#         return JPMMeasurement(label=label, **kwargs)
 
 class ChannelLibrary(Atom):
     # channelDict = Dict(Str, Channel)
@@ -306,7 +292,7 @@ class ChannelLibrary(Atom):
         Helps avoid both stale references from replacing whole channel objects (as in load_from_library)
         and the overhead of recreating everything.
         """
-        
+
         if self.libFile:
             with open(self.libFile, 'r') as FID:
                 try:
@@ -349,7 +335,7 @@ class ChannelLibrary(Atom):
         if 'gateChan' in chParams.keys():
             self.channelDict[chName].gateChan = self.channelDict[chParams['gateChan']] if chParams['gateChan'] in self.channelDict else None
         # TODO: how do we follow changes to selected AWG or generator/source?
-        
+
         for paramName in chParams:
             if paramName not in ignoreList:
                 setattr(self.channelDict[chName], paramName, chParams[paramName])

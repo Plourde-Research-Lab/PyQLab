@@ -3,6 +3,8 @@ import numpy as np
 
 from PulseSequencer import PulseBlock
 
+import Channels, PulseShapes, operator
+
 class JPMPulse(object):
     '''
     A single channel pulse object
@@ -46,7 +48,7 @@ class JPMPulse(object):
     def __neg__(self):
         shapeParams = copy(self.shapeParams)
         shapeParams['amp'] *= -1
-        return Pulse(self.label, self.jpms, shapeParams, self.phase, -self.frameChange)
+        return JPMPulse(self.label, self.jpms, shapeParams, self.phase, -self.frameChange)
 
     def __mul__(self, other):
         return self.promote()*other.promote()

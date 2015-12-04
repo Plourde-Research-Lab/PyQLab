@@ -15,8 +15,13 @@ QGL.Compiler.channelLib = channelLib
 QGL.Compiler.instrumentLib = instrumentLib
 
 
+#q1 = QubitFactory('q1')
+#jpm1 = JPMFactory('jpm1')
+#seqs = [[JPMMEAS(q1), JPMBias(jpm1, amp=d)] for d in np.linspace(0.1, 1, 11)]
+#files = compile_to_hardware(seqs, 'MEAS/MEAS')
+#plot_pulse_files(files)
+
 q1 = QubitFactory('q1')
-jpm1 = JPMFactory('jpm1')
-seqs = [[JPMMEAS(q1), JPMBias(jpm1, amp=d)] for d in np.linspace(0.1, 1, 11)]
+seqs = [[MEAS(q1)]] 
 files = compile_to_hardware(seqs, 'MEAS/MEAS')
 plot_pulse_files(files)

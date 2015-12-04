@@ -55,7 +55,7 @@ class ExpSettings(Atom):
         """Write all the libraries to their files.
 
         """
-        
+
         if self.validate:
             self.validation_errors = ExpSettingsVal.validate_lib()
             if self.validation_errors != []:
@@ -63,7 +63,7 @@ class ExpSettings(Atom):
                 return False
         elif not self.validate:
             print "JSON Files validation disabled"
-            
+
         self.channels.write_to_file()
         self.instruments.write_to_file()
         self.measurements.write_to_file()
@@ -78,7 +78,7 @@ class ExpSettings(Atom):
         except IOError:
             print('No quick pick file found.')
             return
-        
+
         quickPick = quickPicks[name]
 
         #Apply sequence name
@@ -116,11 +116,11 @@ if __name__ == '__main__':
 
     # setup on change AWG
     expSettings.instruments.AWGs.onChangeDelegate = expSettings.channels.on_awg_change
-    
+
 
     #If we were passed a scripter file to write to then use it
     parser = argparse.ArgumentParser()
-    parser.add_argument('--scripterFile', action='store', dest='scripterFile', default=None)    
+    parser.add_argument('--scripterFile', action='store', dest='scripterFile', default=None)
     options =  parser.parse_args(sys.argv[1:])
     if options.scripterFile:
         expSettings.curFileName = options.scripterFile
@@ -132,4 +132,3 @@ if __name__ == '__main__':
     view = ExpSettingsView(expSettings=expSettings)
     view.show()
     app.start()
-

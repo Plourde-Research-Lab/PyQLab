@@ -85,35 +85,3 @@ def JPMMEAS(*args, **kwargs):
         return JPMPulse("JPMMEAS", measChan, params, phase, 0.0)
 
     return reduce(operator.mul, [create_meas_pulse(jpm) for jpm in args])
-
-
-# Comparable Qubit Measurement Pulse
-
-# ## Measurement operators
-# # @_memoize
-# def MEAS(*args, **kwargs):
-#     '''
-#     MEAS(q1, ...) constructs a measurement pulse block of a measurment
-#     Use the single-argument form for an individual readout channel, e.g.
-#         MEAS(q1)
-#     Use tuple-form for joint readout, e.g.
-#         MEAS((q1, q2))
-#     Use multi-argument form for joint simultaneous readout.
-#     '''
-#     def create_meas_pulse(qubit):
-#         if isinstance(qubit, Channels.Qubit):
-#             #Deal with single qubit readout channel
-#             channelName = "M-" + qubit.label
-#         elif isinstance(qubit, tuple):
-#             #Deal with joint readout channel
-#             channelName = "M-"
-#             for q in qubit:
-#                 channelName += q.label
-#         measChan = Channels.MeasFactory(channelName)
-#         params = overrideDefaults(measChan, kwargs)
-#         params['frequency'] = measChan.autodyneFreq
-#         params['baseShape'] = params.pop('shapeFun')
-#         params['shapeFun'] = PulseShapes.autodyne
-#         return Pulse("MEAS", measChan, params, 0.0, 0.0)
-
-#     return reduce(operator.mul, [create_meas_pulse(qubit) for qubit in args])
