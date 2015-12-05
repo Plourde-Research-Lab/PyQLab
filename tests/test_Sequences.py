@@ -1,15 +1,13 @@
 import h5py
-import unittest
 import numpy as np
-import time
-import os
+import unittest, time, os, random
 
 import config
 import Libraries
 from QGL import *
 import QGL
 
-from QGL.Channels import Measurement, LogicalChannel, LogicalMarkerChannel, PhysicalMarkerChannel, PhysicalQuadratureChannel, ChannelLibrary
+from QGL.Channels import Edge, Measurement, LogicalChannel, LogicalMarkerChannel, PhysicalMarkerChannel, PhysicalQuadratureChannel, ChannelLibrary
 from instruments.AWGs import APS2, APS, Tek5014, Tek7000
 from instruments.InstrumentManager import InstrumentLibrary
 
@@ -18,12 +16,15 @@ BASE_AWG_DIR = config.AWGDir
 class AWGTestHelper(object):
 	testFileDirectory = './tests/test_data/awg/'
 
-	def __init__(self, read_function = None, tolerance = 1.5/2**13):
+	def __init__(self, clsObj = None, tolerance = 1.5/2**13):
 		self.channels = {}
 		self.instruments = {}
 		self.assign_channels()
 		self.set_awg_dir()
-		self.read_function = read_function
+		if clsObj:
+			self.read_function = clsObj().read_sequence_file
+		else:
+			self.read_function = None
 		self.tolerance = tolerance
 
 	def finalize_map(self, mapping):
@@ -32,12 +33,12 @@ class AWGTestHelper(object):
 
 		Compiler.channelLib = ChannelLibrary()
 		Compiler.channelLib.channelDict = self.channels
+		Compiler.channelLib.build_connectivity_graph()
 
 		Compiler.instrumentLib = InstrumentLibrary()
 		Compiler.instrumentLib.instrDict = self.instruments
 
 		(self.q1, self.q2) = self.get_qubits()
-		self.cr = self.channels["cr"]
 
 	def assign_channels(self):
 
@@ -48,6 +49,9 @@ class AWGTestHelper(object):
 
 	def assign_logical_channels(self):
 
+		for name in self.logical_names:
+			self.channels[name] = LogicalMarkerChannel(label=name)
+
 		for name in self.qubit_names:
 			mName = 'M-' + name
 			mgName = 'M-' + name + '-gate'
@@ -56,7 +60,7 @@ class AWGTestHelper(object):
 			mg = LogicalMarkerChannel(label=mgName)
 			qg = LogicalMarkerChannel(label=qgName)
 
-			m = Measurement(label=mName, gateChan = mg)
+			m = Measurement(label=mName, gateChan = mg, trigChan=self.channels['digitizerTrig'])
 
 			q = Qubit(label=name, gateChan=qg)
 			q.pulseParams['length'] = 30e-9
@@ -67,19 +71,18 @@ class AWGTestHelper(object):
 			self.channels[mgName]  = mg
 			self.channels[qgName]  = qg
 
-		self.channels['cr-gate']  = LogicalMarkerChannel(label='cr-gate')
-		cr = Qubit(label="cr", gateChan = self.channels['cr-gate'] )
+		# this block depends on the existence of q1 and q2
+		self.channels['cr-gate'] = LogicalMarkerChannel(label='cr-gate')
+
+		q1, q2 = self.channels['q1'], self.channels['q2']
+		cr = Edge(label="cr", source = q1, target = q2, gateChan = self.channels['cr-gate'] )
 		cr.pulseParams['length'] = 30e-9
 		cr.pulseParams['phase'] = pi/4
 		self.channels["cr"] = cr
 
 		mq1q2g = LogicalMarkerChannel(label='M-q1q2-gate')
 		self.channels['M-q1q2-gate']  = mq1q2g
-		self.channels['M-q1q2']       = Measurement(label='M-q1q2', gateChan = mq1q2g)
-
-
-		for name in self.logical_names:
-			self.channels[name] = LogicalMarkerChannel(label=name)
+		self.channels['M-q1q2']       = Measurement(label='M-q1q2', gateChan = mq1q2g, trigChan=self.channels['digitizerTrig'])
 
 	def get_qubits(self):
 		return [QGL.Compiler.channelLib[name] for name in self.qubit_names]
@@ -95,7 +98,7 @@ class AWGTestHelper(object):
 			self.truth_dir = self.truth_dir + os.path.sep + footer
 
 		if not os.path.isdir(self.awg_dir):
-			os.mkdir(self.awg_dir)
+			os.makedirs(self.awg_dir)
 		config.AWGDir = self.awg_dir
 
 	def compare_sequences(self, seqDir):
@@ -173,7 +176,7 @@ class TestSequences(object):
 	def test_misc_seqs2(self):
 		""" catch all for sequences not otherwise covered """
 		self.set_awg_dir()
-		seqs = [ZX90_CR(self.q1, self.q2, self.cr)]
+		seqs = [ZX90_CR(self.q1, self.q2)]
 
 		filenames = compile_to_hardware(seqs, 'MISC2/MISC2')
 		self.compare_sequences('MISC2')
@@ -181,7 +184,7 @@ class TestSequences(object):
 	def test_misc_seqs3(self):
 		""" catch all for sequences not otherwise covered """
 		self.set_awg_dir()
-		seqs = [CNOT_CRa(self.q1, self.q2, self.cr)]
+		seqs = [CNOT_CR(self.q1, self.q2)]
 
 		filenames = compile_to_hardware(seqs, 'MISC3/MISC3')
 		self.compare_sequences('MISC3')
@@ -189,7 +192,7 @@ class TestSequences(object):
 	def test_misc_seqs4(self):
 		""" catch all for sequences not otherwise covered """
 		self.set_awg_dir()
-		seqs = [CNOT_CRb(self.q1, self.q2, self.cr)]
+		seqs = [CNOT_CR(self.q2, self.q1)]
 
 		filenames = compile_to_hardware(seqs, 'MISC4/MISC4')
 		self.compare_sequences('MISC4')
@@ -211,17 +214,17 @@ class TestSequences(object):
 
 	def test_CR_PiRabi(self):
 		self.set_awg_dir()
-		PiRabi(self.q1, self.q2, self.cr,  np.linspace(0, 4e-6, 11))
+		PiRabi(self.q1, self.q2, np.linspace(0, 4e-6, 11))
 		self.compare_sequences('PiRabi')
 
 	def test_CR_EchoCRLen(self):
 		self.set_awg_dir('EchoCRLen')
-		EchoCRLen(self.q1, self.q2, self.cr,  np.linspace(0, 2e-6, 11))
+		EchoCRLen(self.q1, self.q2, np.linspace(0, 2e-6, 11))
 		self.compare_sequences('EchoCR')
 
 	def test_CR_EchoCRPhase(self):
 		self.set_awg_dir('EchoCRPhase')
-		EchoCRPhase(self.q1, self.q2, self.cr,  np.linspace(0, pi/2, 11))
+		EchoCRPhase(self.q1, self.q2, np.linspace(0, pi/2, 11))
 		self.compare_sequences('EchoCR')
 
 	def test_Decoupling_HannEcho(self):
@@ -231,7 +234,7 @@ class TestSequences(object):
 
 	def test_Decoupling_CPMG(self):
 		self.set_awg_dir()
-	 	CPMG(self.q1, np.linspace(0, 2, 4), np.linspace(0, 5e-6, 11))
+		CPMG(self.q1, 2*np.arange(4), 500e-9)
 	 	self.compare_sequences('CPMG')
 
 	def test_FlipFlop(self):
@@ -264,9 +267,9 @@ class TestSequences(object):
 		RabiWidth(self.q1,  np.linspace(0, 5e-6, 11))
 		self.compare_sequences('Rabi')
 
-	def test_Rabi_RabiAmp_TwoQubits(self):
+	def test_Rabi_RabiAmp_NQubits(self):
 		self.set_awg_dir('RabiAmp2')
-		RabiAmp_TwoQubits(self.q1, self.q2, np.linspace(0, 5e-6, 11),  np.linspace(0, 5e-6, 11))
+		RabiAmp_NQubits((self.q1, self.q2), np.linspace(0, 5e-6, 11))
 		self.compare_sequences('Rabi')
 
 	def test_Rabi_RabiAmpPi(self):
@@ -284,10 +287,10 @@ class TestSequences(object):
 		PulsedSpec(self.q1)
 		self.compare_sequences('Spec')
 
-	@unittest.expectedFailure
 	def test_RB_SingleQubitRB(self):
 		self.set_awg_dir('SingleQubitRB')
-		np.random.seed(20152606) # set seed for create_RB_seqs
+		np.random.seed(20152606) # set seed for create_RB_seqs()
+		random.seed(20152606) # set seed for random.choice()
 		SingleQubitRB(self.q1, create_RB_seqs(1, 2**np.arange(1,7)))
 		self.compare_sequences('RB')
 
@@ -299,8 +302,8 @@ class TestSequences(object):
 		AttributeError: 'CompositePulse' object has no attribute 'isZero'
 		"""
 		self.set_awg_dir('TwoQubitRB')
-		np.random.seed(20152606) # set seed for create_RB_seqs
-		TwoQubitRB(self.q1, self.q2, self.cr, create_RB_seqs(2, 2**np.arange(1,6, repeats=16)))
+		np.random.seed(20152606) # set seed for create_RB_seqs()
+		TwoQubitRB(self.q1, self.q2, create_RB_seqs(2, [2, 4, 8, 16, 32], repeats=16))
 		self.compare_sequences('RB')
 
 	# def test_RB_SingleQubitRB_AC(self):
@@ -319,9 +322,18 @@ class TestSequences(object):
 	# 	SingleQubitRBT(self.q1,'')
 	# 	self.compare_sequences('RBT')
 
+	@unittest.expectedFailure
+	def test_RB_SimultaneousRB_AC(self):
+		self.set_awg_dir('SimultaneousRB_AC')
+	 	np.random.seed(20151709) # set seed for create_RB_seqs
+		seqs1 = create_RB_seqs(1, 2**np.arange(1,7))
+		seqs2 = create_RB_seqs(1, 2**np.arange(1,7))
+	 	SimultaneousRB_AC((self.q1, self.q2), (seqs1, seqs2))
+	 	self.compare_sequences('RB')
+
 class APS2Helper(AWGTestHelper):
 	def setUp(self):
-		AWGTestHelper.__init__(self, APS2Pattern.read_APS2_file)
+		AWGTestHelper.__init__(self, APS2)
 		for name in ['APS1', 'APS2', 'APS3', 'APS4', 'APS5', 'APS6']:
 			self.instruments[name] = APS2(label=name)
 
@@ -362,7 +374,7 @@ class TestAPS2(unittest.TestCase, APS2Helper, TestSequences):
 class TestAPS1(unittest.TestCase, AWGTestHelper, TestSequences):
 
 	def setUp(self):
-		AWGTestHelper.__init__(self, APSPattern.read_APS_file)
+		AWGTestHelper.__init__(self, APS)
 		for name in ['APS1', 'APS2', 'APS3']:
 			self.instruments[name] = APS(label=name)
 
@@ -395,6 +407,46 @@ class TestAPS1(unittest.TestCase, AWGTestHelper, TestSequences):
 
 		self.finalize_map(mapping)
 
+	def compare_file_data(self, testFile, truthFile):
+		'''
+		Override the method in AWGTestHelper so that we can special-case marker comparison
+		'''
+		awgData = self.read_function(testFile)
+		truthData = self.read_function(truthFile)
+
+		awgDataLen = len(awgData)
+		truthDataLen = len(truthData)
+
+		self.assertTrue(awgDataLen == truthDataLen,
+			"Expected {0} sequences in file. Found {1}.".format(truthDataLen, awgDataLen))
+
+		for name in truthData:
+			self.assertTrue(name in awgData, "Expected channel {0} not found in file {1}".format(name, testFile))
+			isMarker = ('m' == name[-2])
+
+			for x in range(len(truthData[name])):
+				seqA = np.array(truthData[name][x])
+				seqB = np.array(awgData[name][x])
+				if isMarker:
+					self.compare_marker_sequence(seqA, seqB, "\nFile {0} =>\nChannel {1} Sequence {2}".format(testFile, name, x))
+				else:
+					self.compare_sequence(seqA, seqB, "\nFile {0} =>\nChannel {1} Sequence {2}".format(testFile, name, x))
+
+	def compare_marker_sequence(self, seqA, seqB, errorHeader):
+		markerDistanceTolerance = 4
+		self.assertTrue( seqA.size == seqB.size, "{0} size {1} != size {2}".format(errorHeader, str(seqA.size), str(seqB.size)))
+
+		# convert sequences to locations of blips
+		idxA = np.where(seqA)[0]
+		idxB = np.where(seqB)[0]
+		self.assertTrue(len(idxA) == len(idxB), "{0}.\nNumber of blips did not match: {1} != {2}".format(errorHeader, len(idxA), len(idxB)))
+		# compare the blip locations element-wise
+		if len(idxA) > 0:
+			diff = np.abs(idxA - idxB)
+		else:
+			diff = np.array([0])
+		self.assertTrue(max(diff) <= markerDistanceTolerance, "{0}\nMismatches: {1}".format(errorHeader, diff.nonzero()[0]))
+
 	@unittest.expectedFailure
 	def test_Rabi_RabiWidth(self):
 		""" test_Rabi_RabiWidth is expected to fail on APS1 with the following error:
@@ -405,7 +457,7 @@ class TestAPS1(unittest.TestCase, AWGTestHelper, TestSequences):
 class TestTek5014(unittest.TestCase, AWGTestHelper, TestSequences):
 
 	def setUp(self):
-		AWGTestHelper.__init__(self, TekPattern.read_Tek_file)
+		AWGTestHelper.__init__(self, Tek5014)
 		for name in ['TEK1', 'TEK2']:
 			self.instruments[name] = Tek5014(label=name)
 
@@ -521,8 +573,8 @@ class TestTek5014(unittest.TestCase, AWGTestHelper, TestSequences):
 		TestSequences.test_Rabi_RabiWidth(self)
 
 	@unittest.expectedFailure
-	def test_Rabi_RabiAmp_TwoQubits(self):
-		TestSequences.test_Rabi_RabiAmp_TwoQubits(self)
+	def test_Rabi_RabiAmp_NQubits(self):
+		TestSequences.test_Rabi_RabiAmp_NQubits(self)
 
 	@unittest.expectedFailure
 	def test_Rabi_RabiAmpPi(self):

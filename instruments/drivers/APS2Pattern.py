@@ -21,8 +21,8 @@ import os
 import numpy as np
 from warnings import warn
 from copy import copy
-import Compiler, ControlFlow, BlockLabel, PatternUtils
-from PatternUtils import hash_pulse, flatten
+from QGL import Compiler, ControlFlow, BlockLabel, PatternUtils
+from QGL.PatternUtils import hash_pulse, flatten
 
 #Some constants
 SAMPLING_RATE = 1.2e9
@@ -83,7 +83,7 @@ def create_wf_vector(wfLib):
 		#TA pairs need to be repeated ADDRESS_UNIT times
 		if wf.size == 1:
 			wf = wf.repeat(ADDRESS_UNIT)
-		#Ensure the wf is an integer number of ADDRESS_UNIT's 
+		#Ensure the wf is an integer number of ADDRESS_UNIT's
 		trim = wf.size%ADDRESS_UNIT
 		if trim:
 			wf = wf[:-trim]
@@ -92,9 +92,9 @@ def create_wf_vector(wfLib):
 		assert idx + wf.size < WAVEFORM_CACHE_SIZE, 'Oops! You have exceeded the waveform cache of the APS'
 		wfVec[idx:idx+wf.size] = np.uint16(np.round(MAX_WAVEFORM_VALUE*wf))
 		offsets[key] = idx
-		idx += wf.size 
-					
-	#Trim the waveform 
+		idx += wf.size
+
+	#Trim the waveform
 	wfVec.resize(idx)
 
 	return wfVec, offsets
@@ -134,7 +134,7 @@ class Instruction(object):
 
 		if self.target:
 			out += str(self.target) + "/"
-		
+
 		if instrOpCode == 0x0:
 			wfOpCode = (self.payload >> 46) & 0x3
 			wfOpCodes = ["PLAY", "TRIG", "SYNC"]
@@ -200,7 +200,7 @@ def Waveform(addr, count, isTA, write=False, label=None):
 	count = int(count)
 	count = ((count // ADDRESS_UNIT)-1) & 0x000fffff # 20 bit count
 	addr = (addr // ADDRESS_UNIT) & 0x00ffffff # 24 bit addr
-	payload = (PLAY << WFM_OP_OFFSET) | ((isTA & 0x1) << TA_PAIR_BIT) | (count << 24) | addr
+	payload = (PLAY << WFM_OP_OFFSET) | ((int(isTA) & 0x1) << TA_PAIR_BIT) | (count << 24) | addr
 	return Instruction(header, payload, label)
 
 def Marker(sel, state, count, write=False, label=None):
@@ -256,7 +256,7 @@ def Repeat(addr, label=None):
 def preprocess(seqs, shapeLib, T):
 	for seq in seqs:
 		PatternUtils.propagate_frame_changes(seq)
-	seqs = PatternUtils.convert_lengths_to_samples(seqs, SAMPLING_RATE)
+	seqs = PatternUtils.convert_lengths_to_samples(seqs, SAMPLING_RATE, ADDRESS_UNIT)
 	PatternUtils.quantize_phase(seqs, 1.0/2**13)
 	wfLib = build_waveforms(seqs, shapeLib)
 	PatternUtils.correct_mixers(wfLib, T)
@@ -280,7 +280,7 @@ def build_waveforms(seqs, shapeLib):
 		if isinstance(wf, Compiler.Waveform) and wf_sig(wf) not in wfLib:
 			shape = np.exp(1j*wf.phase) * wf.amp * shapeLib[wf.key]
 			if wf.frequency != 0 and wf.amp != 0:
-				shape *= np.exp(1j*2*np.pi*wf.frequency*np.arange(wf.length)/SAMPLING_RATE)
+				shape *= np.exp(-1j*2*np.pi*wf.frequency*np.arange(wf.length)/SAMPLING_RATE) #minus from negative frequency qubits
 			wfLib[wf_sig(wf)] = shape
 	return wfLib
 
@@ -291,12 +291,13 @@ def timestamp_entries(seq):
 		t += seq[ct].length
 
 def synchronize_clocks(seqs):
-	# SYNC instructions "reset the clock", so when we encounter one, we need to
-	# synchronize the accumulated time to the largest value on any channel
-	syncInstructions = [filter(lambda s: isinstance(s, ControlFlow.Sync), seq) for seq in seqs if seq]
+	# Control-flow instructions (CFIs) must occur at the same time on all channels.
+	# Therefore, we need to "reset the clock" by synchronizing the accumulated
+	# time at each CFI to the largest value on any channel
+	syncInstructions = [filter(lambda s: isinstance(s, ControlFlow.ControlInstruction), seq) for seq in seqs if seq]
 
-	# add length to SYNC instructions to make accumulated time match at end of SYNCs
-	# keep running tally of how much each channel has been shifted so far
+	# Add length to control-flow instructions to make accumulated time match at end of CFI.
+	# Keep running tally of how much each channel has been shifted so far.
 	localShift = [0 for _ in syncInstructions]
 	for ct in range(len(syncInstructions[0])):
 		step = [seq[ct] for seq in syncInstructions]
@@ -309,6 +310,11 @@ def synchronize_clocks(seqs):
 	# re-timestamp to propagate changes across the sequences
 	for seq in seqs:
 		timestamp_entries(seq)
+	# then transfer the control flow "lengths" back into start times
+	for seq in syncInstructions:
+		for instr in seq:
+			instr.startTime += instr.length
+			instr.length = 0
 
 def create_seq_instructions(seqs, offsets):
 	'''
@@ -339,19 +345,8 @@ def create_seq_instructions(seqs, offsets):
 		                   seqs[ct])
 	for ct in range(len(seqs)):
 		if seqs[ct]:
-			localControl = filter(lambda s: isinstance(s, (ControlFlow.ControlInstruction, BlockLabel.BlockLabel)),
-				                  seqs[ct])
 			seqs[ct] = filter(lambda s: isinstance(s, Compiler.Waveform), seqs[ct])
-			# Individual channel delays can cause control-flow instructions to appear at
-			# different start times on the various channels (wfs, m1, m2, etc...). Update
-			# control instructions to have the earliest time stamp of any occurence on
-			# any channel.
-			# n.b.: we are assuming that control instructions have been uniformly
-			# broadcast onto all channels, so that it is sufficient to refer to them by
-			# a common index.
-			if ct > 0:
-				for ct, (a, b) in enumerate(zip(controlInstrs, localControl)):
-					controlInstrs[ct].startTime = min(a.startTime, b.startTime)
+
 	seqs.insert(0, controlInstrs)
 
 	# create (seq, startTime) pairs over all sequences
@@ -362,7 +357,7 @@ def create_seq_instructions(seqs, offsets):
 
 	# keep track of where we are in each sequence
 	curIdx = np.zeros(len(seqs), dtype=np.int64)
-	
+
 	cmpTable = {'==': EQUAL, '!=': NOTEQUAL, '>': GREATERTHAN, '<': LESSTHAN}
 
 	# always start with SYNC (stealing label from beginning of sequence)
@@ -388,7 +383,7 @@ def create_seq_instructions(seqs, offsets):
 				continue
 			instructions.append(Waveform(offsets[wf_sig(entry)],
 				                         entry.length,
-				                         entry.isTimeAmp,
+				                         entry.isTimeAmp or entry.isZero,
 				                         write=writeFlag,
 				                         label=label))
 		elif curSeq > 1: # a marker channel
@@ -470,7 +465,7 @@ def compress_marker(markerLL):
 		while idx+1 < len(seq):
 			if (isinstance(seq[idx], Compiler.Waveform)
 				and isinstance(seq[idx+1], Compiler.Waveform)
-				and seq[idx].key == seq[idx+1].key):
+				and seq[idx].isZero == seq[idx+1].isZero):
 
 				seq[idx].length += seq[idx+1].length
 				del seq[idx+1]
@@ -506,7 +501,7 @@ def write_APS2_file(awgData, fileName):
 	#Open the HDF5 file
 	if os.path.isfile(fileName):
 		os.remove(fileName)
-	with h5py.File(fileName, 'w') as FID:  
+	with h5py.File(fileName, 'w') as FID:
 		FID['/'].attrs['Version'] = 3.0
 		FID['/'].attrs['channelDataFor'] = np.uint16([1,2])
 

@@ -10,104 +10,26 @@ from Instrument import Instrument
 import enaml
 from enaml.qt.qt_application import QtApplication
 
+from instruments.AWGBase import AWGChannel, AWG, AWGDriver
 
-class AWGChannel(Atom):
-    label = Str()
-    amplitude = Float(default=1.0).tag(desc="Scaling applied to channel amplitude")
-    offset = Float(default=0.0).tag(desc='D.C. offset applied to channel')
-    enabled = Bool(True).tag(desc='Whether the channel output is enabled.')
+from plugins import find_plugins
 
-class AWG(Instrument):
-    isMaster = Bool(False).tag(desc='Whether this AWG is master')
-    triggerSource = Enum('Internal', 'External').tag(desc='Source of trigger')
-    triggerInterval = Float(1e-4).tag(desc='Internal trigger interval')
-    samplingRate = Float(1200000000).tag(desc='Sampling rate in Hz')
-    numChannels = Int()
-    channels = List(AWGChannel)
-    seqFile = Str().tag(desc='Path to sequence file.')
-    seqForce = Bool(True).tag(desc='Whether to reload the sequence')
-    delay = Float(0.0).tag(desc='time shift to align multiple AWGs')
+AWGList = []
 
-    def __init__(self, **traits):
-        super(AWG, self).__init__(**traits)
-        if not self.channels:
-            for ct in range(self.numChannels):
-                self.channels.append(AWGChannel())
-
-    def json_encode(self, matlabCompatible=False):
-        jsonDict = super(AWG, self).json_encode(matlabCompatible)
-
-        #The seq file extension is constant so don't encode
-        del jsonDict["seqFileExt"]
-
-        if matlabCompatible:
-            channels = jsonDict.pop('channels', None)
-            for ct,chan in enumerate(channels):
-                jsonDict['chan_{}'.format(ct+1)] = chan
-        return jsonDict
-
-    def update_from_jsondict(self, params):
-
-        for ct in range(self.numChannels):
-            channelParams = params['channels'][ct]
-
-            # if this is still a raw dictionary convert to object
-            if isinstance(channelParams, dict):
-                channelParams.pop('x__class__', None)
-                channelParams.pop('x__module__', None)
-                channelParams = AWGChannel(**channelParams)
-
-            self.channels[ct].label = channelParams.label
-            self.channels[ct].amplitude = channelParams.amplitude
-            self.channels[ct].offset = channelParams.offset
-            self.channels[ct].enabled = channelParams.enabled
-
-        for p in ['label', 'enabled', 'address', 'isMaster', 'triggerSource', 'triggerInterval', 'samplingRate', 'seqFile', 'seqForce', 'delay']:
-            setattr(self, p, params[p])
-
-class APS(AWG):
-    numChannels = Int(default=4)
-    miniLLRepeat = Int(0).tag(desc='How many times to repeat each miniLL')
-    seqFileExt = Constant('.h5')
-
-class APS2(AWG):
-    numChannels = Int(default=2)
-    seqFileExt = Constant('.h5')
-
-class Tek5014(AWG):
-    numChannels = Int(default=4)
-    seqFileExt = Constant('.awg')
-
-class Tek7000(AWG):
-    numChannels = Int(default=2)
-    seqFileExt = Constant('.awg')
-
-AWGList = [APS, APS2, Tek5014, Tek7000]
+plugins = find_plugins(AWG)
+for plugin in plugins:
+    AWGList.append(plugin)
+    globals().update({plugin.__name__: plugin})
+    print 'Registered AWG Driver {0}'.format(plugin.__name__)
 
 if __name__ == "__main__":
 
+
     with enaml.imports():
-        from AWGViews import AWGView
-    
+        from AWGsViews import AWGView
+
     awg = APS(label='BBNAPS1')
     app = QtApplication()
     view = AWGView(awg=awg)
     view.show()
     app.start()
-
-
-def get_empty_channel_set(AWG):
-    """
-    Helper function to get the set of empty channels when compiling to hardware.
-    """
-    if isinstance(AWG, Tek5014):
-        return {'ch12':{}, 'ch34':{}, 'ch1m1':{}, 'ch1m2':{}, 'ch2m1':{}, 'ch2m2':{}, 'ch3m1':{}, 'ch3m2':{} , 'ch4m1':{}, 'ch4m2':{}}
-    elif isinstance(AWG, Tek7000):
-        return {'ch12':{}, 'ch1m1':{}, 'ch1m2':{}, 'ch2m1':{}, 'ch2m2':{}}
-    elif isinstance(AWG, APS):
-        return {'ch12':{}, 'ch34':{}, 'ch1m1':{}, 'ch2m1':{}, 'ch3m1':{}, 'ch4m1':{}}
-    elif isinstance(AWG, APS2):
-        return {'ch12':{}, 'ch12m1':{}, 'ch12m2':{}, 'ch12m3':{}, 'ch12m4':{}}
-    else:
-        raise NameError('Unknown AWG type')             
-

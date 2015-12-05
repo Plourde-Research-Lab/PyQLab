@@ -9,6 +9,9 @@ import itertools, ast
 import enaml
 from enaml.qt.qt_application import QtApplication
 
+class Digitizer(Instrument):
+	pass
+
 class AlazarATS9870(Instrument):
 	address = Str('1').tag(desc='Location of the card') #For now we only have one
 	acquireMode = Enum('digitizer', 'averager').tag(desc='Whether the card averages on-board or returns single-shot data')
@@ -86,9 +89,11 @@ class AgilentAP240(Instrument):
 class X6VirtualChannel(Atom):
 	label = Str()
 	enableDemodStream = Bool(True).tag(desc='Enable demodulated data stream')
-	enableResultStream = Bool(True).tag(desc='Enable result data stream')
+	enableDemodResultStream = Bool(True).tag(desc='Enable demod result data stream')
+	enableRawResultStream = Bool(True).tag(desc='Enable raw result data stream')
 	IFfreq = Float(10e6).tag(desc='IF Frequency')
-	kernel = Str().tag(desc='Integration kernel vector')
+	demodKernel = Str().tag(desc='Integration kernel vector for demod stream')
+	rawKernel = Str().tag(desc='Integration kernel vector for raw stream')
 	threshold = Float(0.0).tag(desc='Qubit state decision threshold')
 
 	def json_encode(self, matlabCompatible=False):
@@ -97,9 +102,13 @@ class X6VirtualChannel(Atom):
 			import numpy as np
 			import base64
 			try:
-				jsonDict['kernel'] = base64.b64encode(eval(self.kernel))
+				jsonDict['demodKernel'] = base64.b64encode(eval(self.demodKernel))
 			except:
-				jsonDict['kernel'] = []
+				jsonDict['demodKernel'] = []
+			try:
+				jsonDict['rawKernel'] = base64.b64encode(eval(self.rawKernel))
+			except:
+				jsonDict['rawKernel'] = []
 		return jsonDict
 
 class X6(Instrument):
@@ -110,6 +119,7 @@ class X6(Instrument):
 	enableRawStreams = Bool(False).tag(desc='Enable capture of raw data from ADCs')
 	# channels = Dict(None, X6VirtualChannel)
 	channels = Coerced(dict)
+	digitizerMode = Enum('digitizer', 'averager').tag(desc='Whether the card averages on-board or returns single-shot data')
 
 	def __init__(self, **traits):
 		super(X6, self).__init__(**traits)
@@ -153,4 +163,3 @@ if __name__ == "__main__":
 	view = TestX6Window(instr=digitizer)
 	view.show()
 	app.start()
-	

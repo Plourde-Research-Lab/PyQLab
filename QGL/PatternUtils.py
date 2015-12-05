@@ -15,7 +15,7 @@ limitations under the License.
 '''
 import numpy as np
 from warnings import warn
-from PulseSequencer import Pulse, TAPulse
+from PulseSequencer import Pulse, TAPulse, PulseBlock
 from PulsePrimitives import BLANK
 import ControlFlow, BlockLabel, Compiler
 from math import pi
@@ -38,7 +38,7 @@ def delay(sequences, delay):
         ct = 0
         while ct < len(seq)-1:
             if seq[ct] == ControlFlow.Wait() or seq[ct] == ControlFlow.Sync():
-                seq.insert(ct+1, TAPulse("Id", seq[ct+1].qubits, delay, 0))
+                seq.insert(ct+1, TAPulse("Id", seq[ct+1].channel, delay, 0))
             ct += 1
 
 def normalize_delays(delays):
@@ -66,12 +66,12 @@ def add_gate_pulses(seqs):
     '''
     for seq in seqs:
         for ct in range(len(seq)):
-            if hasattr(seq[ct], 'pulses'):
+            if isinstance(seq[ct], PulseBlock):
                 for chan, pulse in seq[ct].pulses.items():
                     if has_gate(chan) and not pulse.isZero and not (chan.gateChan in seq[ct].pulses.keys()):
                         seq[ct] *= BLANK(chan, pulse.length)
-            elif hasattr(seq[ct], 'qubits'):
-                chan = seq[ct].qubits
+            elif hasattr(seq[ct], 'channel'):
+                chan = seq[ct].channel
                 if has_gate(chan) and not seq[ct].isZero:
                     seq[ct] *= BLANK(chan, seq[ct].length)
 
@@ -85,7 +85,7 @@ def apply_gating_constraints(chan, linkList):
 
     if not hasattr(chan,'gateMinWidth'):
         raise AttributeError("{0} does not have gateMinWidth".format(chan.label))
-      
+
     # get channel parameters
     gateBuffer = chan.gateBuffer
     gateMinWidth = chan.gateMinWidth
@@ -147,15 +147,23 @@ def apply_gating_constraints(chan, linkList):
 def isNonZeroWaveform(entry):
     return isinstance(entry, Pulse) and not entry.isZero
 
-def add_digitizer_trigger(seqs, trigChan):
+def add_digitizer_trigger(seqs):
     '''
-    Add the digitizer trigger to a logical LL (pulse blocks).
+    Add a digitizer trigger to a logical LL (pulse blocks).
     '''
-    # Attach a trigger to any pulse block containing a measurement
+    # Attach a trigger to any pulse block containing a measurement. Each trigger is specific to each measurement
     for seq in seqs:
         for ct in range(len(seq)):
-            if contains_measurement(seq[ct]) and not (hasattr(seq[ct], 'pulses') and trigChan in seq[ct].pulses.keys()):
-                seq[ct] *= TAPulse("TRIG", trigChan, trigChan.pulseParams['length'], 1.0, 0.0, 0.0)
+            if contains_measurement(seq[ct]):
+                #find corresponding digitizer trigger 
+                chanlist = seq[ct].channel
+                if not isinstance(seq[ct], PulseBlock):
+                    chanlist = [chanlist]
+                for chan in chanlist:
+                    if hasattr(chan, 'trigChan'):
+                        trigChan = chan.trigChan
+                        if not (hasattr(seq[ct], 'pulses') and trigChan in seq[ct].pulses.keys()):
+                            seq[ct] *= TAPulse("TRIG", trigChan, trigChan.pulseParams['length'], 1.0, 0.0, 0.0)
 
 def contains_measurement(entry):
     '''
@@ -163,7 +171,7 @@ def contains_measurement(entry):
     '''
     if entry.label == "MEAS":
         return True
-    elif hasattr(entry, 'pulses'):
+    elif isinstance(entry, PulseBlock):
         for p in entry.pulses.values():
             if p.label == "MEAS":
                 return True
@@ -175,7 +183,7 @@ def add_slave_trigger(seqs, slaveChan):
     '''
     for seq in seqs:
         # skip if the sequence already starts with a slave trig
-        if hasattr(seq[0], 'qubits') and seq[0].qubits == slaveChan:
+        if hasattr(seq[0], 'channel') and seq[0].channel == slaveChan:
             continue
         seq.insert(0, TAPulse("TRIG", slaveChan, slaveChan.pulseParams['length'], 1.0, 0.0, 0.0))
 
@@ -188,7 +196,7 @@ def propagate_frame_changes(seq):
         if not isinstance(entry, Compiler.Waveform):
             continue
         entry.phase = np.mod(frame + entry.phase, 2*pi)
-        frame += entry.frameChange + (2*np.pi * entry.frequency * entry.length)
+        frame += entry.frameChange + (-2*np.pi * entry.frequency * entry.length) #minus from negative frequency qubits
     return seq
 
 def quantize_phase(seqs, precision):
@@ -202,10 +210,12 @@ def quantize_phase(seqs, precision):
         entry.phase = precision * round(phase / precision)
     return seqs
 
-def convert_lengths_to_samples(instructions, samplingRate):
+def convert_lengths_to_samples(instructions, samplingRate, quantization=1):
     for entry in flatten(instructions):
         if isinstance(entry, Compiler.Waveform):
             entry.length = int(round(entry.length * samplingRate))
+            # TODO: warn when truncating?
+            entry.length -= entry.length % quantization
     return instructions
 
 # from Stack Overflow: http://stackoverflow.com/questions/2158395/flatten-an-irregular-list-of-lists-in-python/2158532#2158532

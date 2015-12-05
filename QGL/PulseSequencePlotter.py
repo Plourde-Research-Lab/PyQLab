@@ -33,34 +33,9 @@ from IPython.display import display
 
 import numpy as np
 
-from mm import multimethod
-from QGL.APSPattern import read_APS_file
-from QGL.APS2Pattern import read_APS2_file
-from QGL.TekPattern import read_Tek_awg_file
-from instruments.AWGs import APS, APS2, Tek5014, Tek7000
-
 import uuid, tempfile
 
-import Libraries
-
 import config
-
-# define sequence reader dispatch on awg type
-@multimethod(Tek5014, unicode)
-def read_sequence_file(awg, filename):
-    return read_Tek_awg_file(filename)
-
-@multimethod(Tek7000, unicode)
-def read_sequence_file(awg, filename):
-    return read_Tek_awg_file(filename)
-
-@multimethod(APS, unicode)
-def read_sequence_file(awg, filename):
-    return read_APS_file(filename)
-
-@multimethod(APS2, unicode)
-def read_sequence_file(awg, filename):
-    return read_APS2_file(filename)
 
 def all_zero_seqs(seqs):
     return all([np.all(seq == 0) for seq in seqs])
@@ -81,6 +56,8 @@ def plot_pulse_files(fileNames, firstSeqNum=0):
     lineNames = []
     title = ""
 
+    import Libraries # prevent circular import
+
     for fileName in sorted(fileNames):
 
         #Assume a naming convention path/to/file/SequenceName-AWGName.h5
@@ -91,7 +68,7 @@ def plot_pulse_files(fileNames, firstSeqNum=0):
 
         title += os.path.split(os.path.splitext(fileName)[0])[1] + "; "
 
-        wfs[AWGName] = read_sequence_file(Libraries.instrumentLib[AWGName], fileName)
+        wfs[AWGName] = Libraries.instrumentLib[AWGName].read_sequence_file(fileName)
 
         for (k,seqs) in sorted(wfs[AWGName].items()):
             if not all_zero_seqs(seqs):
@@ -105,10 +82,22 @@ def plot_pulse_files(fileNames, firstSeqNum=0):
     source = bk.ColumnDataSource(data=dataDict)
     figH = bk.figure(title=title, plot_width=1000, y_range=(-1,len(dataDict)+1))
     figH.background_fill = config.plotBackground
+    if config.gridColor:
+        figH.xgrid.grid_line_color = config.gridColor
+        figH.ygrid.grid_line_color = config.gridColor
 
-    #Colorbrewer2 qualitative Set3 (http://colorbrewer2.org)
-    colours = ["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462",
-                 "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"]
+    # Colobrewer2 qualitative Set1 (http://colorbrewer2.org)
+    colours = [
+        "#e41a1c",
+        "#377eb8",
+        "#4daf4a",
+        "#984ea3",
+        "#ff7f00",
+        "#ffff33",
+        "#a65628",
+        "#f781bf",
+        "#999999"
+    ]
 
     for ct,k in enumerate(lineNames):
         figH.line(k+"_x", k, source=source, color=colours[ct%len(colours)], line_width=2, legend=k)
@@ -124,8 +113,11 @@ def plot_pulse_files(fileNames, firstSeqNum=0):
             source.push_notebook()
 
         #widgets.interact(update_plot, seqNum=(1, len(wfs[AWGName]["ch1"])), div=widgets.HTMLWidget(value=notebook_div(figH)))
-
-        slider = widgets.IntSlider(value=firstSeqNum+1, min=1, max=len(wfs[AWGName]["ch1"]), step=1, description="Sequence (of {}):".format(len(seqs)))
+        if 'ch1' in wfs[AWGName].keys():
+            chkey = "ch1"
+        else:
+            chkey = "ch3"
+        slider = widgets.IntSlider(value=firstSeqNum+1, min=1, max=len(wfs[AWGName][chkey]), step=1, description="Sequence (of {}):".format(len(seqs)))
         slider.on_trait_change(update_plot, 'value')
         plotBox = widgets.HTML(value=notebook_div(figH))
         appBox = widgets.Box()

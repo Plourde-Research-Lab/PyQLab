@@ -1,4 +1,4 @@
-from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode, Coerced)
+from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode, Coerced, Int)
 import json, enaml
 from enaml.qt.qt_application import QtApplication
 
@@ -12,6 +12,9 @@ import importlib
 from DictManager import DictManager
 
 import Digitizers, Analysers, DCSources, Attenuators, Counters, PulseGenerators
+
+from plugins import find_plugins
+
 newOtherInstrs = [Digitizers.AlazarATS9870,
     Digitizers.X6,
     Digitizers.AgilentAP240,
@@ -23,6 +26,13 @@ newOtherInstrs = [Digitizers.AlazarATS9870,
     PulseGenerators.TekAFG3022B
     ]
 
+plugins = find_plugins(Digitizers.Digitizer)
+for plugin in plugins:
+    newOtherInstrs.append(plugin)
+    globals().update({plugin.__name__: plugin})
+    print 'Registered Digitizer Driver {0}'.format(plugin.__name__)
+
+
 class InstrumentLibrary(Atom):
     #All the instruments are stored as a dictionary keyed of the instrument name
     instrDict = Dict()
@@ -32,6 +42,7 @@ class InstrumentLibrary(Atom):
     AWGs = Typed(DictManager)
     sources = Typed(DictManager)
     others = Typed(DictManager)
+    version = Int(0)
 
     fileWatcher = Typed(FileWatcher.LibraryFileWatcher)
 
@@ -58,15 +69,19 @@ class InstrumentLibrary(Atom):
     def __getitem__(self, instrName):
         return self.instrDict[instrName]
 
-    def write_to_file(self):
+    def write_to_file(self,fileName=None):
         #Move import here to avoid circular import
         import JSONHelpers
+        libFileName = fileName if fileName != None else self.libFile
         if self.libFile:
             #Pause the file watcher to stop circular updating insanity
             if self.fileWatcher:
                 self.fileWatcher.pause()
-            with open(self.libFile,'w') as FID:
-                json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
+                
+                if libFileName:
+                    with open(libFileName, 'w') as FID:
+                        json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
+            
             if self.fileWatcher:
                 self.fileWatcher.resume()
 
@@ -79,6 +94,8 @@ class InstrumentLibrary(Atom):
                     tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
                     if isinstance(tmpLib, InstrumentLibrary):
                         self.instrDict.update(tmpLib.instrDict)
+                        # grab library version
+                        self.version = tmpLib.version
             except IOError:
                 print('No instrument library found')
             except ValueError:
@@ -125,7 +142,10 @@ class InstrumentLibrary(Atom):
         if matlabCompatible:
             return {label:instr for label,instr in self.instrDict.items() if instr.enabled}
         else:
-            return {"instrDict":{label:instr for label,instr in self.instrDict.items()}}
+            return {
+                "instrDict": {label:instr for label,instr in self.instrDict.items()},
+                "version": self.version
+            }
 
 
 if __name__ == '__main__':

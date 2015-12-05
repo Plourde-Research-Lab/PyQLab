@@ -36,11 +36,6 @@ class Labbrick(MicrowaveSource):
     gateMinWidth = Float(100e-9)
     gateDelay = Float(-60e-9)
 
-class Labbrick64(MicrowaveSource):
-    gateBuffer = Float(20e-9)
-    gateMinWidth = Float(100e-9)
-    gateDelay = Float(-60e-9)
-
 class RhodeSchwarzSMIQ03(MicrowaveSource):
     refSource = Enum("Internal" , "External").tag(desc="Source of 10MHz ref.")
     gateBuffer = Float(20e-9)

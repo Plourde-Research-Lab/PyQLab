@@ -21,8 +21,8 @@ import os
 import numpy as np
 from warnings import warn
 from itertools import chain, izip_longest
-import Compiler, ControlFlow, BlockLabel, PatternUtils
-from PatternUtils import hash_pulse, flatten
+from QGL import Compiler, ControlFlow, BlockLabel, PatternUtils
+from QGL.PatternUtils import hash_pulse, flatten
 from copy import copy, deepcopy
 
 
@@ -47,13 +47,34 @@ def preprocess(seqs, shapeLib, T):
 	seqs, miniLLrepeat = unroll_loops(seqs)
 	for seq in seqs:
 		PatternUtils.propagate_frame_changes(seq)
-	seqs = PatternUtils.convert_lengths_to_samples(seqs, SAMPLING_RATE)
+	seqs = PatternUtils.convert_lengths_to_samples(seqs, SAMPLING_RATE, ADDRESS_UNIT)
 	PatternUtils.quantize_phase(seqs, 1.0/2**13)
+	compress_sequences(seqs)
 	wfLib = build_waveforms(seqs, shapeLib)
 	PatternUtils.correct_mixers(wfLib, T)
-	for seq in seqs:
-		apply_min_pulse_constraints(seq, wfLib)
+	for ct in range(len(seqs)):
+		seqs[ct] = apply_min_pulse_constraints(seqs[ct], wfLib)
 	return seqs, miniLLrepeat, wfLib
+
+def compress_sequences(seqs):
+	'''
+	Drop zero-length pulses and combine adjacent TA pairs into single entries
+	'''
+	for seq in seqs:
+		ct = 1
+		while ct < len(seq):
+			prevEntry = seq[ct-1]
+			curEntry = seq[ct]
+			if isinstance(curEntry, Compiler.Waveform) and curEntry.length == 0:
+				del seq[ct]
+			elif isinstance(prevEntry, Compiler.Waveform) and isinstance(curEntry, Compiler.Waveform) and \
+			   prevEntry.isTimeAmp and curEntry.isTimeAmp and \
+			   prevEntry.amp == curEntry.amp and \
+			   prevEntry.phase == curEntry.phase:
+				prevEntry.length += curEntry.length
+				prevEntry.frameChange += curEntry.frameChange
+				del seq[ct]
+			ct += 1
 
 def build_waveforms(seqs, shapeLib):
 	# apply amplitude, phase, and modulation and add the resulting waveforms to the library
@@ -62,7 +83,7 @@ def build_waveforms(seqs, shapeLib):
 		if isinstance(wf, Compiler.Waveform) and wf_sig(wf) not in wfLib:
 			shape = np.exp(1j*wf.phase) * wf.amp * shapeLib[wf.key]
 			if wf.frequency != 0 and wf.amp != 0:
-				shape *= np.exp(1j*2*np.pi*wf.frequency*np.arange(wf.length)/SAMPLING_RATE)
+				shape *= np.exp(-1j*2*np.pi*wf.frequency*np.arange(wf.length)/SAMPLING_RATE) #minus from negative frequency qubits
 			wfLib[wf_sig(wf)] = shape
 	return wfLib
 
@@ -91,7 +112,7 @@ def apply_min_pulse_constraints(miniLL, wfLib):
 	Helper function to deal with LL elements less than minimum LL entry count
 	by trying to concatenate them into neighbouring entries
 	'''
-	
+
 	newMiniLL = []
 	entryct = 0
 	while entryct < len(miniLL):
@@ -276,7 +297,8 @@ def create_LL_data(LLs, offsets, AWGName=''):
 	assert np.all(seqLengths < MAX_LL_ENTRIES), 'Oops! mini LL''s cannot have length greater than {0}, you have {1} entries'.format(MAX_BANK_SIZE, len(miniLL))
 
 	for miniLL in LLs:
-		while len(miniLL) < MIN_LL_ENTRY_COUNT:
+		# add one because we need at least one control instruction (WAIT) plus MIN_LL_ENTRY_COUNT waveforms
+		while len(miniLL) < MIN_LL_ENTRY_COUNT + 1:
 			miniLL.append(padding_entry(MIN_ENTRY_LENGTH))
 
 	instructions = []
@@ -309,7 +331,7 @@ def create_LL_data(LLs, offsets, AWGName=''):
 					trig2 = t2,
 					repeat = repeat)
 				# set flags
-				instr.TAPair = entry.isTimeAmp
+				instr.TAPair = entry.isTimeAmp or entry.isZero
 				instr.wait = waitFlag
 				instr.start = miniStart
 				waitFlag = False
@@ -352,7 +374,7 @@ def merge_APS_markerData(IQLL, markerLL, markerNum):
 			IQLL.append([])
 
 	for seq in markerLL:
-		PatternUtils.convert_lengths_to_samples(seq, SAMPLING_RATE)
+		PatternUtils.convert_lengths_to_samples(seq, SAMPLING_RATE, ADDRESS_UNIT)
 
 	markerAttr = 'markerDelay' + str(markerNum)
 
@@ -369,19 +391,23 @@ def merge_APS_markerData(IQLL, markerLL, markerNum):
 			t += entry.length
 
 		if len(switchPts) == 0:
+			# need at least a WAIT on an empty IQ LL in order to match segment sequencing
+			if len(miniLL_IQ) == 0:
+				miniLL_IQ.append(ControlFlow.qwait())
 			continue
 
 		# Push on an extra switch point if we have an odd number of switches (to maintain state)
 		if len(switchPts) % 2 == 1:
 			switchPts.append(t)
 
-		#Assume switch pts seperated by 1 point are single trigger blips
-		blipPts = (np.diff(switchPts) == 1).nonzero()[0]
+		#Assume switch pts seperated by 0 or 1 point are single trigger blips
+		blipPts = (np.diff(switchPts) <= 1).nonzero()[0]
 		for pt in blipPts[::-1]:
 			del switchPts[pt+1]
 
 		# if the IQ sequence is empty, make an ideally length-matched sequence
 		if len(miniLL_IQ) == 0:
+			miniLL_IQ.append(ControlFlow.qwait())
 			miniLL_IQ.append(padding_entry(max(switchPts[0], MIN_ENTRY_LENGTH)))
 			for length in np.diff(switchPts):
 				miniLL_IQ.append(padding_entry(max(length, MIN_ENTRY_LENGTH)))
