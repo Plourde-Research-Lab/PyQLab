@@ -9,22 +9,23 @@ class JPMPulse(object):
     '''
     A single channel pulse object
         label - name of the pulse
-        jpms - array of jpm/channel objects the pulse acts upon
+        channel - array of jpm/channel objects the pulse acts upon
         shape - numpy array pulse shape
         frameChange - accumulated phase from the pulse
     '''
-    def __init__(self, label, jpms, shapeParams, phase=0, frameChange=0):
+    def __init__(self, label, channel, shapeParams, amp=1.0, phase=0, frameChange=0):
         self.label = label
-        if isinstance(jpms, (list, tuple)):
+        if isinstance(channel, (list, tuple)):
             # with more than one jpm, need to look up the channel
-            self.jpms = Channels.JPMFactory(reduce(operator.add, [j.label for j in jpms]))
+            self.channel = Channels.JPMFactory(reduce(operator.add, [j.label for j in channel]))
         else:
-            self.jpms = jpms
+            self.channel = channel
         self.shapeParams = shapeParams
         self.phase = phase
+        self.amp = amp
         self.frameChange = frameChange
         self.isTimeAmp = False
-        requiredParams = ['amp', 'length', 'shapeFun']
+        requiredParams = ['length', 'shapeFun']
         for param in requiredParams:
             if param not in shapeParams.keys():
                 raise NameError("ShapeParams must incluce {0}".format(param))
@@ -33,14 +34,14 @@ class JPMPulse(object):
         return str(self)
 
     def __str__(self):
-        if isinstance(self.jpms, tuple):
-            return '{0}({1})'.format(self.label, ','.join([jpm.label for jpm in self.jpms]))
+        if isinstance(self.channel, tuple):
+            return '{0}({1})'.format(self.label, ','.join([channel.label for channel in self.channel]))
         else:
-            return '{0}({1})'.format(self.label, self.jpms.label)
+            return '{0}({1})'.format(self.label, self.channel.label)
 
     # adding pulses concatenates the pulse shapes
     def __add__(self, other):
-        if self.jpms != other.jpms:
+        if self.channel != other.channel:
             raise NameError("Can only concatenate pulses acting on the same channel")
         return CompositePulse([self, other])
 
@@ -48,7 +49,7 @@ class JPMPulse(object):
     def __neg__(self):
         shapeParams = copy(self.shapeParams)
         shapeParams['amp'] *= -1
-        return JPMPulse(self.label, self.jpms, shapeParams, self.phase, -self.frameChange)
+        return JPMPulse(self.label, self.channel, shapeParams, self.phase, -self.frameChange)
 
     def __mul__(self, other):
         return self.promote()*other.promote()
@@ -67,7 +68,7 @@ class JPMPulse(object):
     def promote(self):
         # promote a Pulse to a PulseBlock
         pb =  PulseBlock()
-        pb.pulses = {self.jpms: self}
+        pb.pulses = {self.channel: self}
         return pb
 
     @property
@@ -81,23 +82,23 @@ class JPMPulse(object):
 
     @property
     def isZero(self):
-        return self.shapeParams['amp'] == 0 or np.all(self.shape == 0)
+        return self.amp == 0
 
     @property
     def shape(self):
         params = copy(self.shapeParams)
-        params['samplingRate'] = self.jpms.physChan.samplingRate
+        params['samplingRate'] = self.channel.physChan.samplingRate
         params.pop('shapeFun')
-        params.pop('amp')
+        # params.pop('amp')
         return self.shapeParams['shapeFun'](**params)
 
 
-def JPMTAPulse(label, jpms, length, amp, phase=0, frameChange=0):
+def JPMTAPulse(label, channel, length, amp, phase=0, frameChange=0):
     '''
     Creates a time/amplitude pulse with the given pulse length and amplitude
     '''
-    params = {'amp': amp, 'length': length, 'shapeFun': PulseShapes.constant}
-    p = JPMPulse(label, jpms, params, phase, frameChange)
+    params = {'length': length, 'shapeFun': PulseShapes.constant}
+    p = JPMPulse(label, channel, params, amp, phase, frameChange)
     p.isTimeAmp = True
     return p
 

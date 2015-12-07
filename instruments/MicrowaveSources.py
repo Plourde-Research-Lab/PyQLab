@@ -61,7 +61,7 @@ class PhaseMatrix(MicrowaveSource):
     gateDelay = Float(-60e-9)
 
 #List of possible sources for other views
-MicrowaveSourceList = [AgilentN5183A, HolzworthHS9000, Labbrick, Labbrick64, RhodeSchwarzSMIQ03, HP8673B, HP8340B, BNC845, PhaseMatrix]
+MicrowaveSourceList = [AgilentN5183A, HolzworthHS9000, Labbrick, RhodeSchwarzSMIQ03, HP8673B, HP8340B, BNC845, PhaseMatrix]
 
 if __name__ == "__main__":
     from MicrowaveSources import AgilentN5183A

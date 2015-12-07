@@ -9,7 +9,7 @@ class JPM(LogicalChannel):
     """A class for JPM Channels"""
     pulseParams = Dict(default={'length':5e-9, 'amp':1.0, 'shapeFun':PulseShapes.gaussian, 'buffer':0.0, 'cutoff':2, 'dragScaling':0, 'sigma':5e-9})
     gateChan = Instance((unicode, LogicalMarkerChannel))
-
+    frequency = Float(0.0).tag(desc="Doesn't matter for now.")
     def __init__(self, **kwargs):
         super(JPM, self).__init__(**kwargs)
         if self.gateChan is None:

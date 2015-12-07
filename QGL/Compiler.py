@@ -38,6 +38,7 @@ import instruments
 channelLib = {}
 instrumentLib = {}
 
+
 def map_logical_to_physical(wires):
     # construct a mapping of physical channels to lists of logical channels
     # (there will be more than one logical channel if multiple logical
@@ -60,6 +61,7 @@ def map_logical_to_physical(wires):
 
     return physicalWires
 
+
 def merge_channels(wires, channels):
     chan = channels[0]
     mergedWire = [[] for _ in range(len(wires[chan]))]
@@ -73,22 +75,25 @@ def merge_channels(wires, channels):
                 if any(isinstance(e, (ControlFlow.ControlInstruction, BlockLabel.BlockLabel)) for e in entries):
                     # for the moment require uniform control flow so that we
                     # can pull from the first channel
-                    assert all(e == entries[0] for e in entries), "Non-uniform control flow"
+                    assert all(
+                        e == entries[0] for e in entries), "Non-uniform control flow"
                     segment.append(entries[0])
                     continue
                 # at this point we have at least one waveform instruction
                 blocklength = pull_uniform_entries(entries, entryIterators)
                 newentry = copy(entries[0])
-                #TODO properly deal with constant pulses
+                # TODO properly deal with constant pulses
                 newentry.amp = 1.0
                 newentry.isTimeAmp = all([e.isTimeAmp for e in entries])
                 if all([e.amp == 0 for e in entries]):
                     newentry.amp = 0
                 else:
-                    assert np.count_nonzero([e.amp * e.channel.frequency for e in entries]) <= 1, "Unable to handle merging more than one non-zero entry with non-zero frequency."
+                    assert np.count_nonzero([e.amp * e.channel.frequency for e in entries]
+                                            ) <= 1, "Unable to handle merging more than one non-zero entry with non-zero frequency."
 
-                #If there is a non-zero SSB frequency copy it to the new entry
-                nonZeroSSBChan = np.nonzero([e.amp * e.channel.frequency for e in entries])[0]
+                # If there is a non-zero SSB frequency copy it to the new entry
+                nonZeroSSBChan = np.nonzero(
+                    [e.amp * e.channel.frequency for e in entries])[0]
                 if nonZeroSSBChan:
                     newentry.channel = entries[nonZeroSSBChan[0]].channel
 
@@ -98,16 +103,17 @@ def merge_channels(wires, channels):
                 if pulsesHash not in shapeFunLib:
                     # create closure to sum waveforms
                     def sum_shapes(entries=entries, **kwargs):
-                        return reduce(operator.add, [e.amp * np.exp(1j*e.phase) * e.shape for e in entries])
+                        return reduce(operator.add, [e.amp * np.exp(1j * e.phase) * e.shape for e in entries])
                     shapeFunLib[pulsesHash] = sum_shapes
-                newentry.shapeParams = {'shapeFun':shapeFunLib[pulsesHash], 'length':blocklength}
+                newentry.shapeParams = {
+                    'shapeFun': shapeFunLib[pulsesHash], 'length': blocklength}
                 newentry.label = "*".join([e.label for e in entries])
                 segment.append(newentry)
-
 
             except StopIteration:
                 break
     return mergedWire
+
 
 def pull_uniform_entries(entries, entryIterators):
     '''
@@ -123,19 +129,20 @@ def pull_uniform_entries(entries, entryIterators):
     The function returns the resulting block length.
     '''
     numChan = len(entries)
-    iterDone = [False]*numChan #keep track of how many entry iterators are used up
+    # keep track of how many entry iterators are used up
+    iterDone = [False] * numChan
     ct = 0
     while True:
-        #If we've used up all the entries on all the channels we're done
+        # If we've used up all the entries on all the channels we're done
         if all(iterDone):
             raise StopIteration("Unable to find a uniform set of entries")
 
-        #If all the entry lengths are the same we are finished
+        # If all the entry lengths are the same we are finished
         entryLengths = [e.length for e in entries]
-        if all(x==entryLengths[0] for x in entryLengths):
+        if all(x == entryLengths[0] for x in entryLengths):
             break
 
-        #Otherwise try to concatenate on entries to match lengths
+        # Otherwise try to concatenate on entries to match lengths
         while entries[ct].length < max(e.length for e in entries):
             # concatenate with following entry to make up the length difference
             try:
@@ -149,6 +156,7 @@ def pull_uniform_entries(entries, entryIterators):
 
     return max(e.length for e in entries)
 
+
 def concatenate_entries(entry1, entry2):
     newentry = copy(entry1)
     # TA waveforms with the same amplitude can be merged with a just length update
@@ -156,11 +164,11 @@ def concatenate_entries(entry1, entry2):
     if not (entry1.isTimeAmp and entry2.isTimeAmp and entry1.amp == entry2.amp and entry1.phase == (entry1.frameChange + entry2.phase)):
         # otherwise, need to build a closure to stack them
         def stack_shapes(entry1=entry1, entry2=entry2, **kwargs):
-            return np.hstack((entry1.amp * np.exp(1j*entry1.phase) * entry1.shape,
-                              entry2.amp * np.exp(1j*(entry1.frameChange + entry2.phase)) * entry2.shape))
+            return np.hstack((entry1.amp * np.exp(1j * entry1.phase) * entry1.shape,
+                              entry2.amp * np.exp(1j * (entry1.frameChange + entry2.phase)) * entry2.shape))
 
         newentry.isTimeAmp = False
-        newentry.shapeParams = {'shapeFun' : stack_shapes}
+        newentry.shapeParams = {'shapeFun': stack_shapes}
         newentry.label = entry1.label + '+' + entry2.label
     newentry.frameChange += entry2.frameChange
     newentry.length = entry1.length + entry2.length
@@ -168,8 +176,9 @@ def concatenate_entries(entry1, entry2):
 
     return newentry
 
+
 def generate_waveforms(physicalWires):
-    wfs = {ch : {} for ch in physicalWires.keys()}
+    wfs = {ch: {} for ch in physicalWires.keys()}
     for ch, wire in physicalWires.items():
         for pulse in flatten(wire):
             if not isinstance(pulse, (PulseSequencer.Pulse, JPMPulseSequencer.JPMPulse)):
@@ -181,8 +190,9 @@ def generate_waveforms(physicalWires):
                     wfs[ch][pulse.hashshape()] = pulse.shape
     return wfs
 
+
 def pulses_to_waveforms(physicalWires):
-    wireOuts = {ch : [] for ch in physicalWires.keys()}
+    wireOuts = {ch: [] for ch in physicalWires.keys()}
     for ch, seqs in physicalWires.iteritems():
         for seq in seqs:
             wireOuts[ch].append([])
@@ -194,20 +204,25 @@ def pulses_to_waveforms(physicalWires):
                     wireOuts[ch][-1].append(wf)
     return wireOuts
 
+
 def channel_delay_map(physicalWires):
-    chanDelays = {chan : chan.delay + chan.AWG.delay for chan in physicalWires.keys()}
+    chanDelays = {
+        chan: chan.delay + chan.AWG.delay for chan in physicalWires.keys()}
     return PatternUtils.normalize_delays(chanDelays)
+
 
 def setup_awg_channels(physicalChannels):
     awgs = set([])
     for chan in physicalChannels:
         awgs.add(chan.AWG)
 
-    data = {awg.label:awg.get_empty_channel_set() for awg in awgs}
+    data = {awg.label: awg.get_empty_channel_set() for awg in awgs}
     for awgdata in data.values():
         for chan in awgdata.keys():
-            awgdata[chan] = {'linkList': [], 'wfLib': {}, 'correctionT': np.identity(2)}
+            awgdata[chan] = {
+                'linkList': [], 'wfLib': {}, 'correctionT': np.identity(2)}
     return data
+
 
 def bundle_wires(physWires, wfs):
     awgData = setup_awg_channels(physWires.keys())
@@ -220,15 +235,18 @@ def bundle_wires(physWires, wfs):
             awgData[chan.AWG.label][awgChan]['correctionT'] = chan.correctionT
     return awgData
 
+
 def collect_specializations(seqs):
     '''
     Collects function definitions for all targets of Call instructions
     '''
-    targets = [x.target for x in flatten(seqs) if isinstance(x, ControlFlow.Call)]
+    targets = [x.target for x in flatten(
+        seqs) if isinstance(x, ControlFlow.Call)]
     funcDefs = []
     for target in targets:
         funcDefs += ControlFlow.qfunction_specialization(target)
     return funcDefs
+
 
 def compile_to_hardware(seqs, fileName, suffix=''):
     '''
@@ -245,12 +263,14 @@ def compile_to_hardware(seqs, fileName, suffix=''):
     # Add the slave trigger
     PatternUtils.add_slave_trigger(seqs, channelLib['slaveTrig'])
 
-    # find channel set at top level to account for individual sequence channel variability
+    # find channel set at top level to account for individual sequence channel
+    # variability
     channels = set([])
     for seq in seqs:
         channels |= find_unique_channels(seq)
 
-    # Compile all the pulses/pulseblocks to sequences of pulses and control flow
+    # Compile all the pulses/pulseblocks to sequences of pulses and control
+    # flow
     wireSeqs = compile_sequences(seqs, channels)
 
     if not validate_linklist_channels(wireSeqs.keys()):
@@ -260,7 +280,8 @@ def compile_to_hardware(seqs, fileName, suffix=''):
     # apply gating constraints
     for chan, seq in wireSeqs.items():
         if isinstance(chan, Channels.LogicalMarkerChannel):
-            wireSeqs[chan] = PatternUtils.apply_gating_constraints(chan.physChan, seq)
+            wireSeqs[chan] = PatternUtils.apply_gating_constraints(
+                chan.physChan, seq)
     # map logical to physical channels
     physWires = map_logical_to_physical(wireSeqs)
 
@@ -284,16 +305,19 @@ def compile_to_hardware(seqs, fileName, suffix=''):
     fileList = []
     for awgName, data in awgData.items():
         # create the target folder if it does not exist
-        targetFolder = os.path.split(os.path.normpath(os.path.join(config.AWGDir, fileName)))[0]
+        targetFolder = os.path.split(
+            os.path.normpath(os.path.join(config.AWGDir, fileName)))[0]
         if not os.path.exists(targetFolder):
             os.mkdir(targetFolder)
-        fullFileName = os.path.normpath(os.path.join(config.AWGDir, fileName + '-' + awgName + suffix + instrumentLib[awgName].seqFileExt))
+        fullFileName = os.path.normpath(os.path.join(
+            config.AWGDir, fileName + '-' + awgName + suffix + instrumentLib[awgName].seqFileExt))
         instrumentLib[awgName].write_sequence_file(data, fullFileName)
 
         fileList.append(fullFileName)
 
     # Return the filenames we wrote
     return fileList
+
 
 def compile_sequences(seqs, channels=None):
     '''
@@ -323,9 +347,11 @@ def compile_sequences(seqs, channels=None):
         for chan in wireSeqs.keys():
             wireSeqs[chan].append(wires[chan])
 
-    #Print a message so for the experiment we know how many sequences there are
+    # Print a message so for the experiment we know how many sequences there
+    # are
     print('Compiled {} sequences.'.format(len(seqs)))
     return wireSeqs
+
 
 def compile_sequence(seq, channels=None):
     '''
@@ -333,7 +359,7 @@ def compile_sequence(seq, channels=None):
     separated into individual abstract channels (wires).
     '''
 
-    #Find the set of logical channels used here and initialize them
+    # Find the set of logical channels used here and initialize them
     if not channels:
         channels = find_unique_channels(seq)
 
@@ -350,16 +376,20 @@ def compile_sequence(seq, channels=None):
             for chan in channels:
                 if len(wires[chan]) > 0:
                     wires[chan][-1] = copy(wires[chan][-1])
-                    wires[chan][-1].frameChange += block.pulses[chan].frameChange
+                    wires[
+                        chan][-1].frameChange += block.pulses[chan].frameChange
                 else:
                     warn("Dropping initial frame change")
             continue
         # schedule the block
         for chan in channels:
-            # add aligned Pulses (if the block contains a composite pulse, may get back multiple pulses)
-            wires[chan] += schedule(chan, block.pulses[chan], block.length, block.alignment)
+            # add aligned Pulses (if the block contains a composite pulse, may
+            # get back multiple pulses)
+            wires[
+                chan] += schedule(chan, block.pulses[chan], block.length, block.alignment)
 
     return wires
+
 
 def find_unique_channels(seq):
     channels = set([])
@@ -371,6 +401,7 @@ def find_unique_channels(seq):
         else:
             channels |= set(step.channel)
     return channels
+
 
 def normalize(seq, channels=None):
     '''
@@ -391,10 +422,13 @@ def normalize(seq, channels=None):
             block.pulses[ch] = Id(ch, length=blocklen)
     return seq
 
+
 class Waveform(object):
+
     '''
     IQ LL elements for quadrature mod channels.
     '''
+
     def __init__(self, pulse=None, label=None):
         self.label = label
         self.frequency = 0
@@ -441,6 +475,7 @@ class Waveform(object):
     def isZero(self):
         return self.amp == 0
 
+
 def schedule(channel, pulse, blockLength, alignment):
     '''
     Converts a Pulse or a CompositePulses into an aligned sequence of Pulses
@@ -462,8 +497,9 @@ def schedule(channel, pulse, blockLength, alignment):
         return pulses + [Id(channel, padLength)]
     elif alignment == "right":
         return [Id(channel, padLength)] + pulses
-    else: # center
-        return [Id(channel, padLength/2)] + pulses + [Id(channel, padLength/2)]
+    else:  # center
+        return [Id(channel, padLength / 2)] + pulses + [Id(channel, padLength / 2)]
+
 
 def validate_linklist_channels(linklistChannels):
     errors = []
