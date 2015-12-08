@@ -19,7 +19,7 @@ allowedCommands = ['S','R','0','1','2','3','4','5','6',
                    'j','k','l','m','n','o','p','q','r']
 times = np.linspace(0,21,21)
 # configure the serial connections (the ameters differs on the device youe connecting to)
-ser = s.Serial(port='COM6',
+ser = s.Serial(port='COM18',
                baudrate=1200,
                # ity=s.PARITY_NONE, # not needed in python 2.7.1
                stopbits=s.STOPBITS_ONE,

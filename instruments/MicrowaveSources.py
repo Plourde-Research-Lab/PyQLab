@@ -66,7 +66,7 @@ class PhaseMatrixFSW0020(MicrowaveSource):
 
 #List of possible sources for other views
 
-MicrowaveSourceList = [AgilentN5183A, AgilentE8257D, HolzworthHS9000, Labbrick, Labbrick64, RhodeSchwarzSMIQ03, HP8673B, HP8340B, PhaseMatrixFSW0020]
+MicrowaveSourceList = [AgilentN5183A, AgilentE8257D, HolzworthHS9000, Labbrick, RhodeSchwarzSMIQ03, HP8673B, HP8340B, PhaseMatrixFSW0020]
 
 
 if __name__ == "__main__":
