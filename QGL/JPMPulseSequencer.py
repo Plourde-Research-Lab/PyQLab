@@ -47,9 +47,7 @@ class JPMPulse(object):
 
     # unary negation inverts the pulse amplitude and frame change
     def __neg__(self):
-        shapeParams = copy(self.shapeParams)
-        shapeParams['amp'] *= -1
-        return JPMPulse(self.label, self.channel, shapeParams, self.phase, -self.frameChange)
+        return JPMPulse(self.label, self.channel, copy(self.shapeParams), -self.amp, self.phase, -self.frameChange)
 
     def __mul__(self, other):
         return self.promote()*other.promote()
@@ -89,7 +87,6 @@ class JPMPulse(object):
         params = copy(self.shapeParams)
         params['samplingRate'] = self.channel.physChan.samplingRate
         params.pop('shapeFun')
-        # params.pop('amp')
         return self.shapeParams['shapeFun'](**params)
 
 

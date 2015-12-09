@@ -18,9 +18,9 @@ def overrideDefaults(chan, updateParams):
     return paramDict
 
 
-def JPMBias (jpm, phase=0, label='JPMBias', **kwargs):
+def JPMBias (jpm, label='JPMBias', **kwargs):
     params = overrideDefaults(jpm, kwargs)
-    return JPMPulse(label, jpm, params, phase, 0.0)
+    return JPMPulse(label, jpm, params)
 
 def JPMId(jpm, *args, **kwargs):
     '''
@@ -31,14 +31,7 @@ def JPMId(jpm, *args, **kwargs):
         Id(qubit1, qubit2, [kwargs])
         Id((qubit1,qubit2...), delay, [kwargs])
     '''
-    if not isinstance(jpm, tuple):
-        channel = jpm
-    else:
-        channel = Channels.JPMFactory(reduce(operator.add, [j.label for j in jpm]))
-    if len(args) > 0 and isinstance(args[0], Channels.JPM):
-        channel = Channels.JPMFactory(jpm.label + args[0].label)
-        jpm = (jpm, args[0])
-    params = overrideDefaults(channel, kwargs)
+    params = overrideDefaults(jpm, kwargs)
     if len(args) > 0 and isinstance(args[0], (int,float)):
         params['length'] = args[0]
 
@@ -64,15 +57,6 @@ def JPMMEAS(*args, **kwargs):
                 channelName += q.label
         measChan = Channels.JPMMeasFactory(channelName)
         params = overrideDefaults(measChan, kwargs)
-
-        # # measurement channels should have just an "amp" parameter
-        # measShape = measChan.pulseParams['shapeFun'](**params)
-        # #Apply the autodyne frequency
-        # timeStep = 1.0/measChan.physChan.samplingRate
-        # timePts = np.linspace(0, params['length'], len(measShape))
-        # measShape *= np.exp(-1j*2*pi*measChan.autodyneFreq*timePts)
-
-
         params['frequency'] = params.pop('frequency')
         params['baseShape'] = params.pop('shapeFun')
         params['shapeFun'] = PulseShapes.autodyne
@@ -82,6 +66,6 @@ def JPMMEAS(*args, **kwargs):
             phase = 0.0
 
 
-        return JPMPulse("JPMMEAS", measChan, params, phase, 0.0)
+        return JPMPulse("JPMMEAS", measChan, params)
 
     return reduce(operator.mul, [create_meas_pulse(jpm) for jpm in args])
