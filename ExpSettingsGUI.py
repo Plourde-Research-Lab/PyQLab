@@ -25,7 +25,8 @@ class ExpSettings(Atom):
     channels = Typed(QGL.Channels.ChannelLibrary)
     CWMode = Bool(False)
     validate = Bool(True)
-    curFileName = Str('DefaultExpSettings.json')
+    # curFileName = Str('////128.230.72.36//labshare//Experiments//JPM//CH007 HEMT Readout//DefaultExpSettings.json')
+    curFileName = Str('C://Users//Caleb//Desktop//test.json')
     validation_errors = List()
 
     def __init__(self, **kwargs):

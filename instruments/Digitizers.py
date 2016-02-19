@@ -72,7 +72,7 @@ class AgilentAP240(Instrument):
 		if matlabCompatible:
 			"For the Matlab experiment manager we seperately nest averager, horizontal, vertical settings"
 			jsonDict = {}
-			jsonDict['Address'] = self.address
+			jsonDict['address'] = self.address
 			jsonDict['deviceName'] = 'AgilentAP240'
 			jsonDict['horizontal'] = {'delayTime':self.delay, 'samplingRate':self.samplingRate}
 			jsonDict['vertical'] = {k:getattr(self,k) for k in ['verticalScale', 'verticalOffset', 'verticalCoupling', 'bandwidth']}
