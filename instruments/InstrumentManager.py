@@ -1,11 +1,11 @@
-from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode, Coerced, Int)
+from atom.api import (Atom, Str, List, Dict, Property, Typed, Unicode, Coerced, Int, Callable)
 import json, enaml
 from enaml.qt.qt_application import QtApplication
 
 from Instrument import Instrument
 import MicrowaveSources
 import AWGs
-import FileWatcher
+from JSONLibraryUtils import FileWatcher, LibraryCoders
 
 import importlib
 
@@ -23,11 +23,37 @@ newOtherInstrs = [Digitizers.AlazarATS9870,
     DCSources.SIM928,
     Attenuators.DigitalAttenuator]
 
-plugins = find_plugins(Digitizers.Digitizer)
+plugins = find_plugins(Digitizers.Digitizer, verbose=False)
 for plugin in plugins:
     newOtherInstrs.append(plugin)
     globals().update({plugin.__name__: plugin})
     print 'Registered Digitizer Driver {0}'.format(plugin.__name__)
+
+class AWGDictManager(DictManager):
+    """
+    Specialization of DictManager for AWGs to support auto populating channels.
+    """
+    populate_physical_channels = Callable()
+
+    def __init__(self, auto_populate_channels=None, *args, **kwargs):
+        super(AWGDictManager, self).__init__(*args, **kwargs)
+
+    def add_item(self, parent):
+        """
+        Create a new item dialog window and handle the result
+        """
+        with enaml.imports():
+            from widgets.dialogs import AddAWGDialog
+        dialogBox = AddAWGDialog(parent, modelNames=[i.__name__ for i in self.possibleItems], objText="AWG")
+        dialogBox.exec_()
+        if dialogBox.result:
+            if dialogBox.newLabel not in self.itemDict.keys():
+                self.itemDict[dialogBox.newLabel] = self.possibleItems[dialogBox.newModelNum](label=dialogBox.newLabel)
+                self.displayList.append(dialogBox.newLabel)
+                if dialogBox.auto_populate_channels and self.populate_physical_channels is not None:
+                    self.populate_physical_channels([self.itemDict[dialogBox.newLabel]])
+            else:
+                print("WARNING: Can't use duplicate label %s"%dialogBox.newLabel)
 
 
 class InstrumentLibrary(Atom):
@@ -37,9 +63,10 @@ class InstrumentLibrary(Atom):
 
     #Some helpers to manage types of instruments
     AWGs = Typed(DictManager)
+    markedInstrs = Typed(DictManager)
     sources = Typed(DictManager)
     others = Typed(DictManager)
-    version = Int(0)
+    version = Int(3)
 
     fileWatcher = Typed(FileWatcher.LibraryFileWatcher)
 
@@ -50,10 +77,10 @@ class InstrumentLibrary(Atom):
             self.fileWatcher = FileWatcher.LibraryFileWatcher(self.libFile, self.update_from_file)
 
         #Setup the dictionary managers for the different instrument types
-        self.AWGs = DictManager(itemDict=self.instrDict,
+        self.AWGs = AWGDictManager(itemDict=self.instrDict,
                                 displayFilter=lambda x: isinstance(x, AWGs.AWG),
                                 possibleItems=AWGs.AWGList)
-        
+
         self.sources = DictManager(itemDict=self.instrDict,
                                    displayFilter=lambda x: isinstance(x, MicrowaveSources.MicrowaveSource),
                                    possibleItems=MicrowaveSources.MicrowaveSourceList)
@@ -62,33 +89,34 @@ class InstrumentLibrary(Atom):
                                   displayFilter=lambda x: not isinstance(x, AWGs.AWG) and not isinstance(x, MicrowaveSources.MicrowaveSource),
                                   possibleItems=newOtherInstrs)
 
+        # To enable routing physical marker channels to more generic devices
+        self.markedInstrs = DictManager(itemDict=self.instrDict,
+                                displayFilter=lambda x: not isinstance(x, AWGs.AWG) and hasattr(x, 'takes_marker') and x.takes_marker,
+                                possibleItems=newOtherInstrs)
+
     #Overload [] to allow direct pulling out of an instrument
     def __getitem__(self, instrName):
         return self.instrDict[instrName]
 
     def write_to_file(self,fileName=None):
-        #Move import here to avoid circular import
-        import JSONHelpers
         libFileName = fileName if fileName != None else self.libFile
         if self.libFile:
             #Pause the file watcher to stop circular updating insanity
             if self.fileWatcher:
                 self.fileWatcher.pause()
-                
+
                 if libFileName:
                     with open(libFileName, 'w') as FID:
-                        json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
-            
+                        json.dump(self, FID, cls=LibraryCoders.LibraryEncoder, indent=2, sort_keys=True)
+
             if self.fileWatcher:
                 self.fileWatcher.resume()
 
     def load_from_library(self):
-        #Move import here to avoid circular import
-        import JSONHelpers
         if self.libFile:
             try:
                 with open(self.libFile, 'r') as FID:
-                    tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
+                    tmpLib = json.load(FID, cls=LibraryCoders.LibraryDecoder)
                     if isinstance(tmpLib, InstrumentLibrary):
                         self.instrDict.update(tmpLib.instrDict)
                         # grab library version
@@ -147,7 +175,7 @@ class InstrumentLibrary(Atom):
 
 if __name__ == '__main__':
 
-    
+
     from MicrowaveSources import AgilentN5183A
     instrLib = InstrumentLibrary(instrDict={'Agilent1':AgilentN5183A(label='Agilent1'), 'Agilent2':AgilentN5183A(label='Agilent2')})
     with enaml.imports():

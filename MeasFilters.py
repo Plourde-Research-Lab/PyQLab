@@ -8,6 +8,7 @@ from enaml.qt.qt_application import QtApplication
 
 from DictManager import DictManager
 import json
+from JSONLibraryUtils import LibraryCoders
 
 class MeasFilter(Atom):
     label = Str()
@@ -110,7 +111,7 @@ class MeasFilterLibrary(Atom):
     filterDict = Coerced(dict)
     libFile = Str().tag(transient=True)
     filterManager = Typed(DictManager)
-    version = Int(0)
+    version = Int(1)
 
     def __init__(self, **kwargs):
         super(MeasFilterLibrary, self).__init__(**kwargs)
@@ -122,21 +123,17 @@ class MeasFilterLibrary(Atom):
         return self.filterDict[filterName]
 
     def write_to_file(self,fileName=None):
-        #Move import here to avoid circular import
-        import JSONHelpers
-        
         libFileName = fileName if fileName != None else self.libFile
-        
+
         if libFileName:
             with open(libFileName, 'w') as FID:
-                json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
+                json.dump(self, FID, cls=LibraryCoders.LibraryEncoder, indent=2, sort_keys=True)
 
     def load_from_library(self):
-        import JSONHelpers
         if self.libFile:
             try:
                 with open(self.libFile, 'r') as FID:
-                    tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
+                    tmpLib = json.load(FID, cls=LibraryCoders.LibraryDecoder)
                     if isinstance(tmpLib, MeasFilterLibrary):
                         #Update correlator filter lists to filter objects
                         for filt in tmpLib.filterDict.values():
