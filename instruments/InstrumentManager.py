@@ -20,6 +20,7 @@ newOtherInstrs = [Digitizers.AlazarATS9870,
     Analysers.HP71000,
     Analysers.SpectrumAnalyzer,
     DCSources.YokoGS200,
+    DCSources.SIM928,
     Attenuators.DigitalAttenuator]
 
 plugins = find_plugins(Digitizers.Digitizer)
