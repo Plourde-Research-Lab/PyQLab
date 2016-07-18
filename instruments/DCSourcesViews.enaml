@@ -43,6 +43,7 @@ enamldef YokoGS200Form(GroupBox):
 
 enamldef SIM928Form(GroupBox):
 	attr instr
+	attr instrumentLib
 	title := "{} ({})".format(instr.label, instr.__class__.__name__)
 	padding = 5
 	Form:
@@ -52,7 +53,6 @@ enamldef SIM928Form(GroupBox):
 		Field: 
 			text := instr.address
 			tool_tip = instr.get_member('address').metadata['desc']
-# I can't seem to add a 'channel' entry to instr dispite valient efforts
 		Label:
 			text = 'Channel'
 		IntField:
