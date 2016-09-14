@@ -17,6 +17,7 @@ from plugins import find_plugins
 
 newOtherInstrs = [Digitizers.AlazarATS9870,
     Digitizers.X6,
+    Digitizers.AgilentAP240,
     Analysers.HP71000,
     Analysers.SpectrumAnalyzer,
     DCSources.YokoGS200,
