@@ -185,7 +185,6 @@ def filterLooperGetIdndex(filterLib,myFilter,loop_index):
     else:
         return -1
     
-    
 
 enamldef CorrelatorView(GroupBox):
     attr myFilter

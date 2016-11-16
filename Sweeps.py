@@ -9,12 +9,14 @@ from enaml.qt.qt_application import QtApplication
 
 from instruments.MicrowaveSources import MicrowaveSource
 from instruments.Instrument import Instrument
+from instruments.plugins import find_plugins
 
 from DictManager import DictManager
 
 import numpy as np
 import json
 import floatbits
+from JSONLibraryUtils import LibraryCoders
 
 class Sweep(Atom):
     label = Str()
@@ -112,6 +114,10 @@ class Attenuation(PointsSweep):
     channel = Enum(1, 2, 3).tag(desc='Which channel to sweep')
     instr = Str()
 
+#class AttenuationSU(PointsSweep):
+#    label = Str(default='Attenuation (dB)')
+#    instr = Str()
+
 class DC(PointsSweep):
     label = Str(default='DC')
     instr = Str()
@@ -133,7 +139,7 @@ class SweepLibrary(Atom):
     sweepList = Property()
     sweepOrder = List()
     possibleInstrs = List()
-    version = Int(0)
+    version = Int(1)
 
     sweepManager = Typed(DictManager)
 
@@ -141,6 +147,7 @@ class SweepLibrary(Atom):
 
     def __init__(self, **kwargs):
         super(SweepLibrary, self).__init__(**kwargs)
+        find_sweeps_plugins()
         self.load_from_library()
         self.sweepManager = DictManager(itemDict=self.sweepDict,
                                         possibleItems=newSweepClasses)
@@ -153,21 +160,18 @@ class SweepLibrary(Atom):
         return [sweep.label for sweep in self.sweepDict.values() if sweep.enabled]
 
     def write_to_file(self,fileName=None):
-        import JSONHelpers
-        
         libFileName = fileName if fileName != None else self.libFile
-        
+
         if libFileName:
             with open(libFileName, 'w') as FID:
-                json.dump(self, FID, cls=JSONHelpers.LibraryEncoder, indent=2, sort_keys=True)
+                json.dump(self, FID, cls=LibraryCoders.LibraryEncoder, indent=2, sort_keys=True)
 
     def load_from_library(self):
-        import JSONHelpers
         if self.libFile:
             try:
                 with open(self.libFile, 'r') as FID:
                     try:
-                         tmpLib = json.load(FID, cls=JSONHelpers.LibraryDecoder)
+                         tmpLib = json.load(FID, cls=LibraryCoders.LibraryDecoder)
                     except ValueError, e:
                          print ("WARNING: JSON object issue: %s in %s" % (e,self.libFile))
                          return
@@ -198,9 +202,15 @@ class SweepLibrary(Atom):
                     'version': self.version
                 }
 
-
-
-
+# local plugin registration to enable access by Sweeps.plugin
+def find_sweeps_plugins():
+    plugins = find_plugins(Sweep, verbose=False)
+    for plugin in plugins:
+        if plugin not in newSweepClasses:
+            newSweepClasses.append(plugin)
+        if plugin.__name__ not in globals().keys():
+            globals().update({plugin.__name__: plugin})
+            print 'Registered Plugin {0}'.format(plugin.__name__)
 
 if __name__ == "__main__":
 

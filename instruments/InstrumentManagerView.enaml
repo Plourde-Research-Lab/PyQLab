@@ -9,8 +9,7 @@ from MicrowaveSourcesViews import MicrowaveSourceViewMap
 from DigitizersViews import DigitizerViewMap
 from DCSourcesViews import DCSourcesViewMap
 from AttenuatorsViews import AttenuatorsViewMap
-from CountersViews import CountersViewMap
-from PulseGeneratorsViews import PulseGeneratorsViewMap
+from AnalysersViews import AnalysersViewMap
 
 from DictManagerView import DictManagerView
 
@@ -20,11 +19,13 @@ from plugins import find_view_maps
 
 enamldef EmptyInstrView(Container):
 	attr instr
+	attr instrumentLib
 
 #For standard instruments just display the name and address field
 enamldef DefaultInstrView(GroupBox):
 	hug_width = 'medium'
 	attr instr
+	attr instrumentLib
 	title := '{} ({})'.format(instr.label, instr.__class__.__name__)
 	Form:
 		Label:
@@ -32,12 +33,11 @@ enamldef DefaultInstrView(GroupBox):
 		Field:
 			text := instr.address
 
-otherViewMap = {type(None):EmptyInstrView, Analysers.HP71000:DefaultInstrView, Analysers.SpectrumAnalyzer:DefaultInstrView}
+otherViewMap = {type(None):EmptyInstrView}
 otherViewMap.update(DigitizerViewMap.items())
 otherViewMap.update(DCSourcesViewMap.items())
 otherViewMap.update(AttenuatorsViewMap.items())
-otherViewMap.update(CountersViewMap.items())
-otherViewMap.update(PulseGeneratorsViewMap.items())
+otherViewMap.update(AnalysersViewMap.items())
 
 
 # add plugins maps
@@ -56,7 +56,7 @@ enamldef InstrumentManagerView(Container):
 				viewMap = MicrowaveSourceViewMap
 				modelName = 'uwSource'
 				labelValidator = is_valid_instrument_name
-		
+
 		Page:
 			title = "AWG's"
 			closable = False
@@ -64,8 +64,9 @@ enamldef InstrumentManagerView(Container):
 				dictManager = instrLib.AWGs
 				viewMap = AWGViewMap
 				modelName = 'awg'
+				viewkwargs = {'instrumentLib': instrLib.instrDict}
 				labelValidator = is_valid_instrument_name
-		
+
 		Page:
 			title = "Other"
 			closable = False
@@ -73,12 +74,11 @@ enamldef InstrumentManagerView(Container):
 				dictManager = instrLib.others
 				viewMap = otherViewMap
 				modelName = 'instr'
+				viewkwargs = {'instrumentLib': instrLib.instrDict}
 				labelValidator = is_valid_instrument_name
 
-enamldef InstrumentManagerWindow(Window): 
+enamldef InstrumentManagerWindow(Window):
 	attr instrLib
 	title = 'Instrument Library'
 	InstrumentManagerView:
 		instrLib = parent.instrLib
-
-

@@ -15,3 +15,14 @@ class YokoGS200(DCSource):
 		if matlabCompatible:
 			jsonDict['range'] = jsonDict.pop('outputRange')
 		return jsonDict
+
+class SIM928(DCSource):
+	outputRange = Enum(1e-3, 10e-3, 100e-3, 200e-3, 1.0, 10.0, 20.0).tag(desc='Output range')
+	channel = Int(3).tag(desc='SIM channel {2,3}')
+
+	def json_encode(self, matlabCompatible=False):
+		jsonDict = super(SIM928, self).json_encode(matlabCompatible)
+		jsonDict['channel'] = jsonDict.pop('channel')
+		if matlabCompatible:
+			jsonDict['range'] = jsonDict.pop('outputRange')
+		return jsonDict

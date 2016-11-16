@@ -1,6 +1,6 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, ComboBox, \
 								PushButton, StackItem
-from enaml.stdlib.fields import FloatField
+from enaml.stdlib.fields import FloatField, IntField
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Conditional
 
@@ -10,6 +10,7 @@ from widgets import EnumComboBox, EnumFloatComboBox
 
 enamldef YokoGS200Form(GroupBox):
 	attr instr
+	attr instrumentLib
 	title := "{} ({})".format(instr.label, instr.__class__.__name__)
 	padding = 5
 	Form:
@@ -40,4 +41,32 @@ enamldef YokoGS200Form(GroupBox):
 			value := instr.value
 			tool_tip = instr.get_member('value').metadata['desc']
 
-DCSourcesViewMap = {DCSources.YokoGS200:YokoGS200Form}
+enamldef SIM928Form(GroupBox):
+	attr instr
+	attr instrumentLib
+	title := "{} ({})".format(instr.label, instr.__class__.__name__)
+	padding = 5
+	Form:
+		padding = 2
+		Label: 
+			text = 'Address'
+		Field: 
+			text := instr.address
+			tool_tip = instr.get_member('address').metadata['desc']
+		Label:
+			text = 'Channel'
+		IntField:
+			value := instr.channel
+			tool_tip = instr.get_member('channel').metadata['desc']
+		Label:
+			text = 'Output'
+		CheckBox:
+			checked := instr.output
+			tool_tip = instr.get_member('output').metadata['desc']
+		Label:
+			text = 'Value'
+		FloatField:
+			value := instr.value
+			tool_tip = instr.get_member('value').metadata['desc']
+
+DCSourcesViewMap = {DCSources.YokoGS200:YokoGS200Form,DCSources.SIM928:SIM928Form}

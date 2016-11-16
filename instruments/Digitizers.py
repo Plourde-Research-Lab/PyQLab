@@ -93,8 +93,11 @@ class X6VirtualChannel(Atom):
 	enableRawResultStream = Bool(True).tag(desc='Enable raw result data stream')
 	IFfreq = Float(10e6).tag(desc='IF Frequency')
 	demodKernel = Str().tag(desc='Integration kernel vector for demod stream')
+	demodKernelBias = Str("").tag(desc="Kernel bias for integrated demod stream")
 	rawKernel = Str().tag(desc='Integration kernel vector for raw stream')
+	rawKernelBias = Str("").tag(desc="Kernel bias for integrated raw stream")
 	threshold = Float(0.0).tag(desc='Qubit state decision threshold')
+	thresholdInvert = Bool(False).tag(desc="Invert thresholder output")
 
 	def json_encode(self, matlabCompatible=False):
 		jsonDict = self.__getstate__()
@@ -106,9 +109,17 @@ class X6VirtualChannel(Atom):
 			except:
 				jsonDict['demodKernel'] = []
 			try:
+				jsonDict['demodKernelBias'] = base64.b64encode(np.array(eval(self.demodKernelBias), dtype=np.complex128))
+			except:
+				jsonDict['demodKernelBias'] = []
+			try:
 				jsonDict['rawKernel'] = base64.b64encode(eval(self.rawKernel))
 			except:
 				jsonDict['rawKernel'] = []
+			try:
+				jsonDict['rawKernelBias'] = base64.b64encode(np.array(eval(self.rawKernelBias), dtype=np.complex128))
+			except:
+				jsonDict['rawKernelBias'] = []
 		return jsonDict
 
 class X6(Instrument):
@@ -120,6 +131,7 @@ class X6(Instrument):
 	# channels = Dict(None, X6VirtualChannel)
 	channels = Coerced(dict)
 	digitizerMode = Enum('digitizer', 'averager').tag(desc='Whether the card averages on-board or returns single-shot data')
+	reference = Enum('external', 'internal').tag(desc='Clock source for 10MHz reference to clock generation tree')
 
 	def __init__(self, **traits):
 		super(X6, self).__init__(**traits)

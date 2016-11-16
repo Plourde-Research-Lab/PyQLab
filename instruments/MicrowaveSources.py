@@ -55,17 +55,17 @@ class HP8340B(MicrowaveSource):
 
 class PhaseMatrix(MicrowaveSource):
     refSource = Enum("Internal" , "External").tag(desc="Source of 10MHz ref.")
+
+class AgilentE8257D(MicrowaveSource):
     gateBuffer = Float(20e-9)
     gateMinWidth = Float(100e-9)
     gateDelay = Float(-60e-9)
 
 class HittiteHMCT2100(MicrowaveSource):
     refSource = Enum("Internal", "External").tag(desc="Source of 10MHz ref.")
-    gateBuffer = Float(20e-9)
-    gateMinWidth = Float(100e-9)
-    gateDelay = Float(-60e-9)
 
 #List of possible sources for other views
+
 MicrowaveSourceList = [AgilentN5183A, HolzworthHS9000, Labbrick, RhodeSchwarzSMIQ03, HP8673B, HP8340B, BNC845, PhaseMatrix, HittiteHMCT2100]
 
 if __name__ == "__main__":

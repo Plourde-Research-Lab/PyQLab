@@ -3,4 +3,7 @@
 *.awg
 *.json
 __enamlcache__/
+<<<<<<< HEAD
 .ipynb_checkpoints/
+=======
+>>>>>>> d9fe9292bee095c13aee31f7e80be60b56e8a556

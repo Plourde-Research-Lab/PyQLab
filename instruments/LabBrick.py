@@ -9,22 +9,31 @@ Model, Viewer and Controller for the LabBrick microwave generators
 
 #Path to the dll file
 #I don't know why this isn't installed in a standard location
+<<<<<<< HEAD
 dllPath = 'C:\Users\Caleb\Development\qlab\common\+deviceDrivers\@Labbrick\\'
+=======
+dllPath = 'C:\Users\Britton\Documents\GitHub\Qlab\common\+deviceDrivers\@Labbrick64\\'
+>>>>>>> d9fe9292bee095c13aee31f7e80be60b56e8a556
 
 import ctypes
 import sys
 import timer
 
-from PyQt4 import QtGui, QtCore
+from PySide import QtGui, QtCore
 
 #Model for the LabBrick
 class LabBrick(object):
     #Constructor
-    def __init__(self, serialNum=None):
+    def __init__(self, serialNum):
         #Load the dll (we use cdll becuase the header specifies:
         ##define VNX_FSYNSTH_API __declspec(dllimport)
+<<<<<<< HEAD
         self.dll = ctypes.cdll.LoadLibrary(dllPath+'vnx_fmsynth.dll')
 
+=======
+	self.dll = ctypes.cdll.LoadLibrary(dllPath+'hidapi.dll')
+        print(dllPath+'hidapi.dll')
+>>>>>>> d9fe9292bee095c13aee31f7e80be60b56e8a556
         #Set to non-test mode
         self.dll.fnLMS_SetTestMode(0)
 
@@ -34,6 +43,7 @@ class LabBrick(object):
         #Connect if a device is specified
         if serialNum is not None:
             self.connect(serialNum)
+	    print('Connected')
         #Otherwise initialize device properties to None
         else:
             self.serialNum = None
@@ -270,10 +280,10 @@ class LabBrickWidget(QtGui.QWidget):
 
 if __name__ == '__main__':
     print('Got here')
-    labBrick = LabBrick(1690)
+    labBrick = LabBrick(2224)
 
-#    QtGui.QApplication.setStyle(QtGui.QStyleFactory.create("Cleanlooks"))
-#    QtGui.QApplication.setPalette(QtGui.QApplication.style().standardPalette())
+    QtGui.QApplication.setStyle(QtGui.QStyleFactory.create("Cleanlooks"))
+    QtGui.QApplication.setPalette(QtGui.QApplication.style().standardPalette())
 
     app = QtGui.QApplication(sys.argv)
     tmpFont = QtGui.QFont()
@@ -282,4 +292,9 @@ if __name__ == '__main__':
     labBrickGUI = LabBrickWidget(labBrick)
     labBrickGUI.show()
 
+<<<<<<< HEAD
     sys.exit(app.exec_())
+=======
+    
+    
+>>>>>>> d9fe9292bee095c13aee31f7e80be60b56e8a556
