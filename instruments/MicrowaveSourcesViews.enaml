@@ -4,7 +4,7 @@ from enaml.stdlib.fields import FloatField
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Conditional
 
-import MicrowaveSources
+from . import MicrowaveSources
 
 from widgets.enum_combos import EnumComboBox
 
@@ -68,60 +68,6 @@ enamldef MicrowaveSourceForm(GroupBox):
 				obj := uwSource
 				enumName = "refSource"
 
-enamldef PhaseMatrixForm(GroupBox):
-	attr uwSource
-	title := "{} ({})".format(uwSource.label, uwSource.__class__.__name__)
-	hug_width = "strong"
-	hug_height = "strong"
-	padding = 5
-	Form:
-		padding = 2
-		Label: 
-			text = "Address"
-		Field: 
-			text := uwSource.address
-			tool_tip = uwSource.get_member("address").metadata["desc"]
-		Label:
-			text = "Frequency"
-		FloatField:
-			maximum = 20.0
-			minimum = 0.0
-			value := uwSource.frequency
-			tool_tip = uwSource.get_member("frequency").metadata["desc"]
-		Label:
-			text = "Output"
-		CheckBox:
-			checked := uwSource.output
-			tool_tip = uwSource.get_member("output").metadata["desc"]
-		Label:
-			text = "ALC"
-		CheckBox:
-			checked := uwSource.alc
-			enabled << not modOn.checked
-			tool_tip = uwSource.get_member("alc").metadata["desc"]
-		Label: 
-			text = "Modulation"
-		CheckBox: modOn:
-			checked := uwSource.mod
-			tool_tip = uwSource.get_member("mod").metadata["desc"]
-		Label:
-			text = "Pulse Modulate"
-		CheckBox:
-			checked := uwSource.pulse
-			tool_tip = uwSource.get_member("pulse").metadata["desc"]
-		Label:
-			text = "Pulse Source"
-		EnumComboBox:
-			obj := uwSource
-			enumName = "pulseSource"
-		Conditional:
-			condition = hasattr(uwSource, "refSource")
-			Label:
-				text = "Ref. Source"
-			EnumComboBox:
-				obj := uwSource
-				enumName = "refSource"
-
 enamldef MicrowaveSourceView(Window): sourceWindow:
 	attr uwSource
 	title = uwSource.label
@@ -132,5 +78,5 @@ enamldef MicrowaveSourceView(Window): sourceWindow:
 enamldef EmptySourceView(Container):
 	attr uwSource
 
-MicrowaveSourceViewMap = {type(None):EmptySourceView, MicrowaveSources.MicrowaveSource:MicrowaveSourceForm, MicrowaveSources.PhaseMatrixFSW0020:PhaseMatrixForm}
 
+MicrowaveSourceViewMap = {type(None):EmptySourceView, MicrowaveSources.MicrowaveSource:MicrowaveSourceForm}

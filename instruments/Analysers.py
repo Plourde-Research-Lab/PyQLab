@@ -6,7 +6,8 @@ from atom.api import Atom, Float, Int, Enum, Bool
 import enaml
 from enaml.qt.qt_application import QtApplication
 
-from Instrument import Instrument
+
+from .Instrument import Instrument
 
 class SpectrumAnalyzer(Instrument):
 	pass

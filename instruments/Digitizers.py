@@ -1,7 +1,7 @@
 """
 For now just Alazar cards but should also support Acquiris.
 """
-from Instrument import Instrument
+from .Instrument import Instrument
 
 from atom.api import Atom, Str, Int, Float, Bool, Enum, List, Dict, Coerced
 import itertools, ast
@@ -12,7 +12,7 @@ from enaml.qt.qt_application import QtApplication
 class Digitizer(Instrument):
 	pass
 
-class AlazarATS9870(Instrument):
+class AlazarATS9870(Digitizer):
 	address = Str('1').tag(desc='Location of the card') #For now we only have one
 	acquireMode = Enum('digitizer', 'averager').tag(desc='Whether the card averages on-board or returns single-shot data')
 	clockType = Enum('ref')
@@ -105,24 +105,24 @@ class X6VirtualChannel(Atom):
 			import numpy as np
 			import base64
 			try:
-				jsonDict['demodKernel'] = base64.b64encode(eval(self.demodKernel))
+				jsonDict['demodKernel'] = base64.b64encode(eval(self.demodKernel)).decode('ascii')
 			except:
 				jsonDict['demodKernel'] = []
 			try:
-				jsonDict['demodKernelBias'] = base64.b64encode(np.array(eval(self.demodKernelBias), dtype=np.complex128))
+				jsonDict['demodKernelBias'] = base64.b64encode(np.array(eval(self.demodKernelBias), dtype=np.complex128)).decode('ascii')
 			except:
 				jsonDict['demodKernelBias'] = []
 			try:
-				jsonDict['rawKernel'] = base64.b64encode(eval(self.rawKernel))
+				jsonDict['rawKernel'] = base64.b64encode(eval(self.rawKernel)).decode('ascii')
 			except:
 				jsonDict['rawKernel'] = []
 			try:
-				jsonDict['rawKernelBias'] = base64.b64encode(np.array(eval(self.rawKernelBias), dtype=np.complex128))
+				jsonDict['rawKernelBias'] = base64.b64encode(np.array(eval(self.rawKernelBias), dtype=np.complex128)).decode('ascii')
 			except:
 				jsonDict['rawKernelBias'] = []
 		return jsonDict
 
-class X6(Instrument):
+class X6(Digitizer):
 	recordLength = Int(1024).tag(desc='Number of samples in each record')
 	nbrSegments = Int(1).tag(desc='Number of segments in memory')
 	nbrWaveforms = Int(1).tag(desc='Number of times each segment is repeated')
@@ -145,8 +145,7 @@ class X6(Instrument):
 		jsonDict = super(X6, self).json_encode(matlabCompatible)
 		if matlabCompatible:
 			# For the Matlab experiment manager we nest averager settings
-			map(lambda x: jsonDict.pop(x), ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins'])
-			jsonDict['averager'] = {k:getattr(self,k) for k in ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins']}
+			jsonDict['averager'] = {k:jsonDict.pop(k) for k in ['recordLength', 'nbrSegments', 'nbrWaveforms', 'nbrRoundRobins']}
 
 		return jsonDict
 
