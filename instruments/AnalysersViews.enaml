@@ -1,5 +1,5 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, ComboBox, \
-								PushButton, StackItem
+                PushButton, StackItem
 from enaml.stdlib.fields import FloatField
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Conditional
@@ -9,52 +9,52 @@ import Analysers
 from widgets.enum_combos import EnumComboBox
 
 enamldef NetworkAnalyzerForm(GroupBox):
-	attr na
-	title := "{} ({})".format(na.label, na.__class__.__name__)
-	hug_width = "strong"
-	hug_height = "strong"
-	padding = 5
-	Form:
-		padding = 2
-		Label:
-			text = "Address"
-		Field:
-			text := na.address
-			tool_tip = na.get_member("address").metadata["desc"]
-		Label:
-			text = "Power"
-		FloatField:
-			maximum = 25.0
-			value := na.power
-			tool_tip = na.get_member("power").metadata["desc"]
-		Label:
-			text = "Center Frequency"
-		FloatField:
-			maximum = 20.0
-			minimum = 0.0
-			value := na.centerF
-			tool_tip = na.get_member("centerF").metadata["desc"]
+  attr na
+  title := "{} ({})".format(na.label, na.__class__.__name__)
+  hug_width = "strong"
+  hug_height = "strong"
+  padding = 5
+  Form:
+    padding = 2
     Label:
-			text = "Span Frequency"
-		FloatField:
-			maximum = 20.0
-			minimum = 0.0
-			value := na.spanF
-			tool_tip = na.get_member("spanF").metadata["desc"]
+      text = "Address"
+    Field:
+      text := na.address
+      tool_tip = na.get_member("address").metadata["desc"]
     Label:
-			text = "Start Frequency"
-		FloatField:
-			maximum = 20.0
-			minimum = 0.0
-			value := na.startF
-			tool_tip = na.get_member("startF").metadata["desc"]
+      text = "Power"
+    FloatField:
+      maximum = 25.0
+      value := na.power
+      tool_tip = na.get_member("power").metadata["desc"]
     Label:
-			text = "Stop Frequency"
-		FloatField:
-			maximum = 20.0
-			minimum = 0.0
-			value := na.stopF
-			tool_tip = na.get_member("stopF").metadata["desc"]
+      text = "Center Frequency"
+    FloatField:
+      maximum = 20.0
+      minimum = 0.0
+      value := na.centerF
+      tool_tip = na.get_member("centerF").metadata["desc"]
+    Label:
+      text = "Span Frequency"
+    FloatField:
+      maximum = 20.0
+      minimum = 0.0
+      value := na.spanF
+      tool_tip = na.get_member("spanF").metadata["desc"]
+    Label:
+      text = "Start Frequency"
+    FloatField:
+      maximum = 20.0
+      minimum = 0.0
+      value := na.startF
+      tool_tip = na.get_member("startF").metadata["desc"]
+    Label:
+      text = "Stop Frequency"
+    FloatField:
+      maximum = 20.0
+      minimum = 0.0
+      value := na.stopF
+      tool_tip = na.get_member("stopF").metadata["desc"]
     GroupBox:
       Label:
         text = "Number of Points"

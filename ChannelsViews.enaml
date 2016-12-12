@@ -207,8 +207,6 @@ ChannelViewMap = {
     type(None): EmptyChannelView,
     QGL.Channels.Qubit: LogicalQuadratureView,
     QGL.Channels.Measurement: LogicalQuadratureView,
-    QGL.Channels.JPM:LogicalQuadratureView,
-    QGL.Channels.JPMMeasurement:LogicalQuadratureView,
     QGL.Channels.Edge: LogicalQuadratureView,
     QGL.Channels.LogicalMarkerChannel: LogicalMarkerChannelView,
     QGL.Channels.PhysicalQuadratureChannel: PhysicalQuadratureChannelView,
