@@ -1,10 +1,10 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, ComboBox, \
                 PushButton, StackItem
-from enaml.stdlib.fields import FloatField
+from enaml.stdlib.fields import FloatField, IntField
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Conditional
 
-import Analysers
+from . import Analysers
 
 from widgets.enum_combos import EnumComboBox
 
@@ -70,6 +70,6 @@ enamldef NetworkAnalyzerForm(GroupBox):
         text = "IF Bandwidth"
       FloatField:
         value := na.bandwidth
-        tool_top = na.get_member("bandwidth").metadata["desc"]
+        tool_tip = na.get_member("bandwidth").metadata["desc"]
 
-AnalysersViewMap = {type(None):EmptySourceView, Analysers.NetworkAnalyzer:NetworkAnalyzerForm}
+AnalysersViewMap = {Analysers.NetworkAnalyzer:NetworkAnalyzerForm}
