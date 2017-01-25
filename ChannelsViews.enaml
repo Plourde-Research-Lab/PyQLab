@@ -139,6 +139,9 @@ enamldef LogicalQuadratureView(GroupBox): curView:
     qubits << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.Qubit)]
     attr receivers
     receivers << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.ReceiverChannel)]
+    attr jpms
+    jpms << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.JPM)]
+
     title := '{} ({})'.format(chan.label, chan.__class__.__name__)
     Form:
         Conditional:
