@@ -1,7 +1,7 @@
 from enaml.widgets.api import Window, Label, Field, Form, Container, GroupBox, CheckBox, \
  ComboBox, PushButton, ToolBar, Action, FlowArea, FlowItem, ScrollArea
 from enaml.stdlib.fields import FloatField, IntField, Field
-from enaml.core.api import Include
+from enaml.core.api import Include, Conditional
 from enaml.layout.api import hbox, vbox, spacer
 
 from widgets import EnumComboBox
@@ -67,6 +67,13 @@ enamldef AlazarView(GroupBox):
 					EnumComboBox:
 						obj := instr
 						enumName = 'acquireMode'
+					Conditional:
+						condition << instr.acquireMode == 'thresholder'
+						Label:
+							text = 'Threshold'
+						FloatField:
+							value := instr.threshold
+							tool_tip = instr.get_member('threshold').metadata['desc']
 					Label:
 						text = 'Trigger Delay:'
 					FloatField:
@@ -163,7 +170,7 @@ enamldef AgilentAP240View(GroupBox):
 					text = 'Address:'
 				Field:
 					text := instr.address
-			GroupBox: 
+			GroupBox:
 				title = 'Horizontal'
 				Form:
 					Label:
@@ -185,7 +192,7 @@ enamldef AgilentAP240View(GroupBox):
 						value <<  instr.samplingRate/1e6
 						value :: instr.samplingRate = value*1e6
 						tool_tip = instr.get_member('samplingRate').metadata['desc']
-			GroupBox: 
+			GroupBox:
 				title = 'Vertical'
 				Form:
 					Label:
@@ -208,7 +215,7 @@ enamldef AgilentAP240View(GroupBox):
 					EnumComboBox:
 						obj := instr
 						enumName = 'bandwidth'
-			GroupBox: 
+			GroupBox:
 				title = 'Averager'
 				Form:
 					Label:
@@ -217,7 +224,7 @@ enamldef AgilentAP240View(GroupBox):
 						validator = RecordLengthValidator(lengthMult=64)
 						value := instr.recordLength
 						tool_tip = instr.get_member('recordLength').metadata['desc']
-					Label: 
+					Label:
 						text = 'Segments'
 					IntField:
 						value := instr.nbrSegments
@@ -232,7 +239,7 @@ enamldef AgilentAP240View(GroupBox):
 					IntField:
 						value := instr.nbrRoundRobins
 						tool_tip = instr.get_member('nbrRoundRobins').metadata['desc']
-			GroupBox: 
+			GroupBox:
 				title = 'Trigger'
 				Form:
 					Label:

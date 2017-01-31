@@ -14,9 +14,10 @@ class Digitizer(Instrument):
 
 class AlazarATS9870(Digitizer):
 	address = Str('1').tag(desc='Location of the card') #For now we only have one
-	acquireMode = Enum('digitizer', 'averager').tag(desc='Whether the card averages on-board or returns single-shot data')
+	acquireMode = Enum('digitizer', 'averager', 'thresholder').tag(desc='Whether the card averages on-board, returns single-shot data, or averages thresholded data')
 	clockType = Enum('ref')
 	delay = Float(0.0).tag(desc='Delay from trigger')
+	threshold = Float(0.1).tag(desc='Threshold for state selection')
 	samplingRate = Float(100000000).tag(desc='Sampling rate in Hz')
 	verticalScale = Float(1.0).tag(desc='Peak voltage (V)')
 	verticalOffset = Float(0.0).tag(desc='Vertical offset (V)')
@@ -44,6 +45,7 @@ class AlazarATS9870(Digitizer):
 			#Add the other necessities
 			jsonDict['acquireMode'] = self.acquireMode
 			jsonDict['clockType'] = self.clockType
+			jsonDict['threshold'] = self.threshold
 		else:
 			jsonDict = super(AlazarATS9870, self).json_encode(matlabCompatible)
 
