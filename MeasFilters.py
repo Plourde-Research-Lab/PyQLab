@@ -53,6 +53,23 @@ class CounterMeasFilter(Atom):
             jsonDict['x__module__'] = self.__class__.__module__
         return jsonDict
 
+class DigitalMeasFilter(Atom):
+    label = Str()
+    enabled = Bool(True)
+    dataSource = Str().tag(desc="Where the measurement data is pushed from.")
+    plotMode = Enum('data').tag(desc='Plot switching probability data')
+
+    def json_encode(self, matlabCompatible=False):
+        jsonDict = self.__getstate__()
+        if matlabCompatible:
+            jsonDict['filterType'] = self.__class__.__name__
+            jsonDict.pop('enabled', None)
+            jsonDict.pop('label', None)
+        else:
+            jsonDict['x__class__'] = self.__class__.__name__
+            jsonDict['x__module__'] = self.__class__.__module__
+        return jsonDict
+
 class RawStream(MeasFilter):
     saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
     recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
@@ -98,7 +115,7 @@ class KernelIntegration(MeasFilter):
             jsonDict['kernel'] = kernel
         return jsonDict
 
-    
+
 class Correlator(MeasFilter):
     filters = List()
 
@@ -131,6 +148,9 @@ class CounterStream(CounterMeasFilter):
     saveRecords = Bool(True).tag(desc='Whether to save the single-shot records to file.')
     recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
     plotMode = Str('normal')
+
+class SwitchingProbabilityStream(DigitalMeasFilter):
+    pass
 
 class MeasFilterLibrary(Atom):
     # filterDict = Dict(Str, MeasFilter)
@@ -184,7 +204,7 @@ class MeasFilterLibrary(Atom):
             }
 
 
-measFilterList = [RawStream, DigitalDemod, KernelIntegration, Correlator, StateComparator, StreamSelector, CounterStream]
+measFilterList = [RawStream, DigitalDemod, KernelIntegration, Correlator, StateComparator, StreamSelector, CounterStream, SwitchingProbabilityStream]
 
 
 if __name__ == "__main__":

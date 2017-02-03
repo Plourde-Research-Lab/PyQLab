@@ -323,6 +323,21 @@ enamldef CounterStreamView(GroupBox):
         CheckBox:
             checked := myFilter.saved
 
+enamldef SwitchingProbabilityStreamView(GroupBox):
+    attr myFilter
+    attr filterLib
+    title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
+    hug_width = 'medium'
+    Form:
+        Label:
+            text = "Data source"
+        Field:
+            text := myFilter.dataSource
+        Label:
+            text = "Plot mode"
+        EnumComboBox:
+            obj := myFilter
+            enumName = 'plotMode'
 #Dummy empty view
 enamldef EmptyMeasFilterForm(Container):
     attr myFilter
@@ -336,7 +351,8 @@ filterViewMap = {type(None): EmptyMeasFilterForm,
     MeasFilters.Correlator: CorrelatorView,
     MeasFilters.StateComparator: StateComparatorView,
     MeasFilters.StreamSelector: StreamSelectorView,
-    MeasFilters.CounterStream: CounterStreamView}
+    MeasFilters.CounterStream: CounterStreamView,
+    MeasFilters.SwitchingProbabilityStream: SwitchingProbabilityStreamView}
 
 enamldef MeasFilterManager(Container): measFilterManager:
     attr filterLib
