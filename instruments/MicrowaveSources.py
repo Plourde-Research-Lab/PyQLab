@@ -66,7 +66,7 @@ class HittiteHMCT2100(MicrowaveSource):
 
 #List of possible sources for other views
 
-MicrowaveSourceList = [AgilentN5183A, HolzworthHS9000, Labbrick, RhodeSchwarzSMIQ03, HP8673B, HP8340B, BNC845, PhaseMatrix, HittiteHMCT2100]
+MicrowaveSourceList = [AgilentN5183A, HolzworthHS9000, Labbrick, RhodeSchwarzSMIQ03, HP8673B, HP8340B, BNC845, PhaseMatrix, AgilentE8257D, HittiteHMCT2100]
 
 if __name__ == "__main__":
     from MicrowaveSources import AgilentN5183A
