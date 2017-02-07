@@ -29,6 +29,7 @@ newOtherInstrs = [Digitizers.AlazarATS9870,
     Analysers.AgilentN5230A,
     DCSources.YokoGS200,
     DCSources.SIM928,
+    DCSources.TekAFG3022B,
     Attenuators.DigitalAttenuator
     ]
 

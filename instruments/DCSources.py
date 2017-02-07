@@ -26,3 +26,16 @@ class SIM928(DCSource):
 		if matlabCompatible:
 			jsonDict['range'] = jsonDict.pop('outputRange')
 		return jsonDict
+
+class TekAFG3022B(DCSource):
+	outputRange = Enum(1e-3, 10e-3, 100e-3, 200e-3, 1.0, 10.0, 20.0).tag(desc='Output range')
+	channel = Int(2).tag(desc='Tek channel')
+	width = Float(10.0).tag(desc='Pulse width (ns)')
+
+	def json_encode(self, matlabCompatible=False):
+		jsonDict = super(TekAFG3022B, self).json_encode(matlabCompatible)
+		jsonDict['channel'] = jsonDict.pop('channel')
+		jsonDict['width'] = jsonDict.pop('width')
+		if matlabCompatible:
+			jsonDict['range'] = jsonDict.pop('outputRange')
+		return jsonDict
