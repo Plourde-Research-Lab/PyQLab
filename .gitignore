@@ -1,5 +1,6 @@
 *.ipynb
 *.pyc
 *.awg
+config.json
 __enamlcache__/
 .ipynb_checkpoints/
