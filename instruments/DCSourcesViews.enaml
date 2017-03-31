@@ -48,9 +48,9 @@ enamldef SIM928Form(GroupBox):
 	padding = 5
 	Form:
 		padding = 2
-		Label: 
+		Label:
 			text = 'Address'
-		Field: 
+		Field:
 			text := instr.address
 			tool_tip = instr.get_member('address').metadata['desc']
 		Label:
@@ -68,5 +68,6 @@ enamldef SIM928Form(GroupBox):
 		FloatField:
 			value := instr.value
 			tool_tip = instr.get_member('value').metadata['desc']
+		
 
 DCSourcesViewMap = {DCSources.YokoGS200:YokoGS200Form,DCSources.SIM928:SIM928Form}

@@ -1,104 +1,58 @@
 {
   "CWMode": false,
   "instruments": {
-    "APS2_1": {
-      "address": "192.168.2.2",
+    "APS22": {
+      "address": "192.168.2.3",
       "chan_1": {
-        "amplitude": 1.0,
+        "amplitude": 0.25,
         "enabled": true,
-        "offset": 0.0
+        "offset": 0.0246
       },
       "chan_2": {
-        "amplitude": 1.0,
+        "amplitude": 0.25,
         "enabled": true,
-        "offset": 0.0
+        "offset": 0.0006
       },
       "delay": 0.0,
       "deviceName": "APS2",
       "isMaster": true,
       "numChannels": 2,
       "samplingRate": 1200000000.0,
-      "seqFile": "",
+      "seqFile": "Z:/Experiments/DR2/pyqlab-config/AWG/Echo/Echo-APS22.h5",
       "seqForce": true,
-      "triggerInterval": 0.0001,
+      "triggerInterval": 5e-05,
       "triggerSource": "Internal"
     },
-    "APS2_2": {
-      "address": "192.168.2.3",
+    "APS23": {
+      "address": "192.168.2.4",
       "chan_1": {
-        "amplitude": 1.0,
+        "amplitude": 0.5,
         "enabled": true,
-        "offset": 0.0
+        "offset": -0.0132
       },
       "chan_2": {
-        "amplitude": 1.0,
+        "amplitude": 0.5,
         "enabled": true,
-        "offset": 0.0
+        "offset": 0.0114
       },
       "delay": 0.0,
       "deviceName": "APS2",
       "isMaster": false,
       "numChannels": 2,
       "samplingRate": 1200000000.0,
-      "seqFile": "",
+      "seqFile": "Z:/Experiments/DR2/pyqlab-config/AWG/Echo/Echo-APS23.h5",
       "seqForce": true,
-      "triggerInterval": 0.0001,
-      "triggerSource": "Internal"
+      "triggerInterval": 5e-05,
+      "triggerSource": "External"
     },
-    "Attenuator": {
-      "address": "COM6",
-      "ch1Attenuation": 0.0,
-      "ch2Attenuation": 20.0,
-      "ch3Attenuation": 20.0,
-      "deviceName": "DigitalAttenuator"
-    },
-    "DC": {
-      "address": "19",
-      "channel": 3,
-      "deviceName": "SIM928",
-      "mode": "voltage",
-      "output": true,
-      "range": 0.001,
-      "value": 0.05
-    },
-    "HTCI": {
-      "address": "10",
-      "alc": false,
-      "deviceName": "HittiteHMCT2100",
-      "frequency": 5.07655,
-      "gateBuffer": 0.0,
-      "gateDelay": 0.0,
-      "gateMinWidth": 0.0,
-      "mod": false,
-      "output": true,
-      "power": 15.0,
-      "pulse": false,
-      "pulseSource": "Internal",
-      "refSource": "Internal"
-    },
-    "HTCII": {
-      "address": "18",
-      "alc": false,
-      "deviceName": "HittiteHMCT2100",
-      "frequency": 5.0,
-      "gateBuffer": 0.0,
-      "gateDelay": 0.0,
-      "gateMinWidth": 0.0,
-      "mod": false,
-      "output": true,
-      "power": 15.0,
-      "pulse": false,
-      "pulseSource": "Internal",
-      "refSource": "Internal"
-    },
-    "Scope": {
-      "acquireMode": "thresholder",
+    "Alazar": {
+      "acquireMode": "averager",
       "address": "1",
       "averager": {
-        "nbrRoundRobins": 500,
-        "nbrSegments": 1,
+        "nbrRoundRobins": 4000,
+        "nbrSegments": 105,
         "nbrWaveforms": 1,
-        "recordLength": 1024
+        "recordLength": 4096
       },
       "clockType": "ref",
       "deviceName": "AlazarATS9870",
@@ -109,7 +63,7 @@
       "threshold": 0.1,
       "trigger": {
         "triggerCoupling": "DC",
-        "triggerLevel": 100.0,
+        "triggerLevel": 500.0,
         "triggerSlope": "rising",
         "triggerSource": "Ext"
       },
@@ -117,39 +71,107 @@
         "bandwidth": "Full",
         "verticalCoupling": "AC",
         "verticalOffset": 0.0,
-        "verticalScale": 1.0
+        "verticalScale": 0.04
       }
+    },
+    "Attenuator": {
+      "address": "COM5",
+      "ch1Attenuation": 0.0,
+      "ch2Attenuation": 30.0,
+      "ch3Attenuation": 0.0,
+      "deviceName": "DigitalAttenuator"
+    },
+    "DC2": {
+      "address": "18",
+      "channel": 3,
+      "deviceName": "SIM928",
+      "mode": "voltage",
+      "output": true,
+      "range": 0.001,
+      "value": 5.568
+    },
+    "HTCII": {
+      "address": "ASRL6::INSTR",
+      "alc": true,
+      "deviceName": "HittiteHMCT2100",
+      "frequency": 5.0,
+      "gateBuffer": 0.0,
+      "gateDelay": 0.0,
+      "gateMinWidth": 0.0,
+      "mod": false,
+      "output": true,
+      "power": 18.0,
+      "pulse": false,
+      "pulseSource": "External",
+      "refSource": "External"
+    },
+    "MXG": {
+      "address": "30",
+      "alc": false,
+      "deviceName": "AgilentN5183A",
+      "frequency": 5.01,
+      "gateBuffer": 2e-08,
+      "gateDelay": -6e-08,
+      "gateMinWidth": 1e-07,
+      "mod": true,
+      "output": true,
+      "power": 10.0,
+      "pulse": true,
+      "pulseSource": "External"
     }
   },
   "measurements": {
-    "SwitchingProbability": {
-      "dataSource": "Scope",
-      "filterType": "SwitchingProbabilityStream",
-      "plotMode": "data"
+    "Demod": {
+      "IFfreq": 10000000.0,
+      "bandwidth": 7000000.0,
+      "dataSource": "Stream",
+      "decimFactor1": 4,
+      "decimFactor2": 4,
+      "decimFactor3": 1,
+      "filterType": "DigitalDemod",
+      "phase": 0.0,
+      "plotMode": "quad",
+      "plotScope": true,
+      "recordsFilePath": "",
+      "samplingRate": 1000000000.0,
+      "saveRecords": false,
+      "saved": true
+    },
+    "M1_KernelIntegrator": {
+      "IFfreq": 0.0,
+      "bias": 0.0,
+      "boxCarStart": 100,
+      "boxCarStop": 250,
+      "dataSource": "Demod",
+      "filterType": "KernelIntegration",
+      "kernel": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAAAAAAAAAPA/AAAAAAAAAAAAAAAAAADwPwAAAAAAAAAAAAAAAAAA8D8AAAAAAAAAAA==",
+      "plotMode": "quad",
+      "plotScope": true,
+      "samplingRate": 1000000000.0,
+      "saved": true,
+      "simpleKernel": true
+    },
+    "Stream": {
+      "channel": "1",
+      "dataSource": "Alazar",
+      "filterType": "RawStream",
+      "plotMode": "real/imag",
+      "plotScope": true,
+      "recordsFilePath": "",
+      "saveRecords": false,
+      "saved": true
     }
   },
   "sweeps": {
-    "Amplitude": {
-      "axisLabel": "Ampl.",
-      "channel": "3&4",
-      "instr": "APS2_1",
-      "mode": "Amp.",
-      "numPoints": 26,
+    "SegmentNumWithCals": {
+      "axisLabel": "time (us)",
+      "numCals": 4,
+      "numPoints": 105,
       "order": 1,
       "start": 0.0,
-      "step": 0.016,
-      "stop": 0.4,
-      "type": "AWGChannel"
-    },
-    "Frequency": {
-      "axisLabel": "Frequency",
-      "instr": "HTCII",
-      "numPoints": 626,
-      "order": 2,
-      "start": 3.0,
-      "step": 0.0032,
-      "stop": 5.0,
-      "type": "Frequency"
+      "step": 0.01,
+      "stop": 1.04,
+      "type": "SegmentNum"
     }
   }
 }

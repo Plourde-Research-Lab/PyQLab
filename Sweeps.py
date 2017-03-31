@@ -144,6 +144,7 @@ class Attenuation(PointsSweep):
 
 class DC(PointsSweep):
     label = Str(default='DC')
+    channel = Enum(1, 2, 3).tag(desc='Which channel to sweep')
     instr = Str()
 
 class Threshold(PointsSweep):

@@ -1,5 +1,5 @@
 from enaml.widgets.api import Window, Container, Notebook, Page, PushButton, GroupBox, Form, Label, Field, \
-                             ComboBox
+                             ComboBox, ScrollArea
 from enaml.stdlib.fields import FloatField, Field
 from enaml.layout.api import hbox, vbox, spacer
 from enaml.core.api import Looper, Conditional
@@ -143,88 +143,89 @@ enamldef LogicalQuadratureView(GroupBox): curView:
     jpms << [ch for ch in channelLib.values() if isinstance(ch, QGL.Channels.JPM)]
 
     title := '{} ({})'.format(chan.label, chan.__class__.__name__)
-    Form:
-        Conditional:
-            condition = isinstance(chan, QGL.Channels.Measurement)
-            Label:
-                text = 'Type'
-            EnumComboBox:
-                obj := chan
-                enumName = 'measType'
-            Conditional:
-                condition << chan.measType == 'autodyne'
-                Label:
-                    text = 'Autodyne Freq. (MHz)'
-                FloatField:
-                    value << chan.autodyneFreq/1e6
-                    value :: chan.autodyneFreq = value*1e6
-                    tool_tip = chan.get_member('autodyneFreq').metadata["desc"]
-            Label:
-                text = 'Trigger Chan.'
-            ComboBox:
-                items << [''] + [c.label for c in logicalMarkerChannels]
-                index = items.index(chan.trigChan.label)
-                index ::
-                    chan.trigChan = channelLib[selected_item]
-            Label:
-                text = 'Receiver Chan.'
-            ComboBox:
-                items << [c.label for c in receivers]
-                index = items.index(chan.receiverChan.label) if chan.receiverChan else -1
-                index ::
-                    chan.receiverChan = channelLib[selected_item]
-        Conditional:
-            condition = isinstance(chan, QGL.Channels.Edge)
-            Label:
-                text = 'Source Qubit'
-            ComboBox:
-                items << [c.label for c in qubits]
-                index = items.index(chan.source.label) if chan.source else -1
-                index ::
-                    chan.source = channelLib[selected_item]
-            Label:
-                text = 'Target Qubit'
-            ComboBox:
-                items << [c.label for c in qubits]
-                index = items.index(chan.target.label) if chan.target else -1
-                index ::
-                    chan.target = channelLib[selected_item]
-        Label:
-            text = 'Frequency (MHz)'
-        FloatField:
-            value << chan.frequency/1e6
-            value :: chan.frequency = value*1e6
-            tool_tip = chan.get_member('frequency').metadata["desc"]
-        Label:
-            text = 'Physical Chan.'
-        ComboBox:
-            items << [c.label for c in physicalChannels]
-            index = items.index(chan.physChan.label) if (chan.physChan and chan.physChan.label in items) else -1
-            index ::
-                chan.physChan = channelLib[selected_item]
-        Label:
-            text = 'Gate Chan.'
-        ComboBox:
-            items << [''] + [c.label for c in logicalMarkerChannels]
-            index = items.index(chan.gateChan.label) if chan.gateChan else 0
-            index ::
-                chan.gateChan = channelLib[selected_item] if selected_item else ""
-        Looper:
-            iterable << sorted(chan.pulseParams.keys())
-            Label:
-                text = loop_item
-            Conditional:
-                condition = isinstance(chan.pulseParams[loop_item], float) or isinstance(chan.pulseParams[loop_item], int)
-                FloatField:
-                    value << float(chan.pulseParams[loop_item])
-                    value >> chan.pulseParams[loop_item]
-            Conditional:
-                condition = isinstance(chan.pulseParams[loop_item], FunctionType)
-                ComboBox:
-                    items << [f.__name__ for f in psList]
-                    index << psList.index(chan.pulseParams[loop_item])
-                    index ::
-                        chan.pulseParams[loop_item] = psList[index]
+    ScrollArea:
+      Form:
+          Conditional:
+              condition = isinstance(chan, QGL.Channels.Measurement)
+              Label:
+                  text = 'Type'
+              EnumComboBox:
+                  obj := chan
+                  enumName = 'measType'
+              Conditional:
+                  condition << chan.measType == 'autodyne'
+                  Label:
+                      text = 'Autodyne Freq. (MHz)'
+                  FloatField:
+                      value << chan.autodyneFreq/1e6
+                      value :: chan.autodyneFreq = value*1e6
+                      tool_tip = chan.get_member('autodyneFreq').metadata["desc"]
+              Label:
+                  text = 'Trigger Chan.'
+              ComboBox:
+                  items << [''] + [c.label for c in logicalMarkerChannels]
+                  index = items.index(chan.trigChan.label)
+                  index ::
+                      chan.trigChan = channelLib[selected_item]
+              Label:
+                  text = 'Receiver Chan.'
+              ComboBox:
+                  items << [c.label for c in receivers]
+                  index = items.index(chan.receiverChan.label) if chan.receiverChan else -1
+                  index ::
+                      chan.receiverChan = channelLib[selected_item]
+          Conditional:
+              condition = isinstance(chan, QGL.Channels.Edge)
+              Label:
+                  text = 'Source Qubit'
+              ComboBox:
+                  items << [c.label for c in qubits]
+                  index = items.index(chan.source.label) if chan.source else -1
+                  index ::
+                      chan.source = channelLib[selected_item]
+              Label:
+                  text = 'Target Qubit'
+              ComboBox:
+                  items << [c.label for c in qubits]
+                  index = items.index(chan.target.label) if chan.target else -1
+                  index ::
+                      chan.target = channelLib[selected_item]
+          Label:
+              text = 'Frequency (MHz)'
+          FloatField:
+              value << chan.frequency/1e6
+              value :: chan.frequency = value*1e6
+              tool_tip = chan.get_member('frequency').metadata["desc"]
+          Label:
+              text = 'Physical Chan.'
+          ComboBox:
+              items << [c.label for c in physicalChannels]
+              index = items.index(chan.physChan.label) if (chan.physChan and chan.physChan.label in items) else -1
+              index ::
+                  chan.physChan = channelLib[selected_item]
+          Label:
+              text = 'Gate Chan.'
+          ComboBox:
+              items << [''] + [c.label for c in logicalMarkerChannels]
+              index = items.index(chan.gateChan.label) if chan.gateChan else 0
+              index ::
+                  chan.gateChan = channelLib[selected_item] if selected_item else ""
+          Looper:
+              iterable << sorted(chan.pulseParams.keys())
+              Label:
+                  text = loop_item
+              Conditional:
+                  condition = isinstance(chan.pulseParams[loop_item], float) or isinstance(chan.pulseParams[loop_item], int)
+                  FloatField:
+                      value << float(chan.pulseParams[loop_item])
+                      value >> chan.pulseParams[loop_item]
+              Conditional:
+                  condition = isinstance(chan.pulseParams[loop_item], FunctionType)
+                  ComboBox:
+                      items << [f.__name__ for f in psList]
+                      index << psList.index(chan.pulseParams[loop_item])
+                      index ::
+                          chan.pulseParams[loop_item] = psList[index]
 
 
 enamldef EmptyChannelView(Container):

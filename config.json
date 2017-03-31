@@ -1,7 +1,7 @@
 {
-	"AWGDir": "/Users/Caleb/Development/pyqlab-config/AWG",
-	"ChannelLibraryFile": "/Users/Caleb/Development/pyqlab-config/Config/ChannelParams.json",
-	"InstrumentLibraryFile": "/Users/Caleb/Development/pyqlab-config/Config/Instruments.json",
-	"SweepLibraryFile": "/Users/Caleb/Development/pyqlab-config/Config/Sweeps.json",
-	"MeasurementLibraryFile": "/Users/Caleb/Development/pyqlab-config/Config/Measurements.json"
+	"AWGDir": "Z:/Experiments/DR2/pyqlab-config/AWG",
+	"ChannelLibraryFile": "Z:/Experiments/DR2/pyqlab-config/Config/ChannelParams.json",
+	"InstrumentLibraryFile": "Z:/Experiments/DR2/pyqlab-config/Config/Instruments.json",
+	"SweepLibraryFile": "Z:/Experiments/DR2/pyqlab-config/Config/Sweeps.json",
+	"MeasurementLibraryFile": "Z:/Experiments/DR2/pyqlab-config/Config/Measurements.json"
 }
