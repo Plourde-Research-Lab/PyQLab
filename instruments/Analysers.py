@@ -9,8 +9,6 @@ from enaml.qt.qt_application import QtApplication
 
 from .Instrument import Instrument
 
-class SpectrumAnalyzer(Instrument):
-	pass
 
 class NetworkAnalyzer(Instrument):
 	power = Float().tag(desc='Output power in dBm')

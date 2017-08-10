@@ -72,4 +72,19 @@ enamldef NetworkAnalyzerForm(GroupBox):
         value := na.bandwidth
         tool_tip = na.get_member("bandwidth").metadata["desc"]
 
-AnalysersViewMap = {Analysers.NetworkAnalyzer:NetworkAnalyzerForm}
+enamldef SpectrumAnalyzerForm(GroupBox):
+  attr instr
+  attr instrumentLib
+  title := "{} ({})".format(instr.label, instr.__class__.__name__)
+  hug_width = "strong"
+  hug_height = "strong"
+  padding = 5
+  Form:
+    padding = 2
+    Label:
+      text = "Address"
+    Field:
+      text := instr.address
+      tool_tip = instr.get_member("address").metadata["desc"]
+
+AnalysersViewMap = {Analysers.NetworkAnalyzer:NetworkAnalyzerForm, Analysers.SpectrumAnalyzer:SpectrumAnalyzerForm}

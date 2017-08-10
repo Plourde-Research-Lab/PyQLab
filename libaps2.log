@@ -1,0 +1,279 @@
+- 15:58:04.000 INFO: libaps2 version: v1.2-12-g41c254b-dirty
+- 15:58:04.172 INFO: 192.168.2.2 opened connection to device
+- 15:58:04.172 INFO: 192.168.2.2 initializing APS2
+- 15:58:04.172 INFO: 192.168.2.2 setting up DAC 0
+- 15:58:05.203 INFO: 192.168.2.2 setting up DAC 1
+- 15:58:05.219 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 15:58:05.234 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 15:58:05.266 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 15:58:05.797 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 15:58:05.797 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 15:58:40.484 INFO: 192.168.2.2 closed connection to device
+- 15:59:18.734 INFO: 192.168.2.2 opened connection to device
+- 15:59:18.766 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 15:59:18.813 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 15:59:18.141 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 15:59:18.141 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:00:10.328 INFO: 192.168.2.2 closed connection to device
+- 16:01:31.672 INFO: 192.168.2.2 opened connection to device
+- 16:01:31.719 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:01:31.719 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:01:31.141 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:01:31.141 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:02:44.000 INFO: 192.168.2.2 closed connection to device
+- 16:08:23.109 INFO: 192.168.2.2 opened connection to device
+- 16:08:23.141 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:08:24.219 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:08:24.594 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:08:24.594 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:09:32.938 INFO: 192.168.2.2 closed connection to device
+- 16:11:58.500 INFO: 192.168.2.2 opened connection to device
+- 16:11:58.531 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:11:58.578 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:11:58.000 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:11:58.000 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:12:39.938 INFO: 192.168.2.2 closed connection to device
+- 16:12:42.359 INFO: 192.168.2.2 opened connection to device
+- 16:12:42.375 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:12:42.391 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:12:42.734 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:12:42.750 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:13:52.875 INFO: 192.168.2.2 closed connection to device
+- 16:14:42.953 INFO: 192.168.2.2 opened connection to device
+- 16:14:42.969 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:14:42.000 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:14:43.375 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:14:43.375 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:15:51.172 INFO: 192.168.2.2 closed connection to device
+- 16:18:41.594 INFO: 192.168.2.2 opened connection to device
+- 16:18:41.609 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:18:41.703 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:18:41.078 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:18:41.078 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:18:51.734 INFO: 192.168.2.2 closed connection to device
+- 16:20:23.953 INFO: 192.168.2.2 opened connection to device
+- 16:20:23.953 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:20:23.000 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:20:24.328 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:20:24.328 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:21:34.469 INFO: 192.168.2.2 closed connection to device
+- 16:21:36.984 INFO: 192.168.2.2 opened connection to device
+- 16:21:36.000 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:21:36.031 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:21:37.359 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:21:37.359 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:22:49.828 INFO: 192.168.2.2 closed connection to device
+- 16:29:28.906 INFO: 192.168.2.2 opened connection to device
+- 16:29:28.922 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:29:28.984 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:29:29.375 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:29:29.391 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:29:41.438 INFO: 192.168.2.2 closed connection to device
+- 16:30:26.844 INFO: 192.168.2.2 opened connection to device
+- 16:30:26.859 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:30:26.859 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:30:27.203 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:30:27.203 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:30:34.281 INFO: 192.168.2.2 closed connection to device
+- 16:37:42.000 INFO: 192.168.2.2 opened connection to device
+- 16:37:42.016 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:37:42.031 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:37:43.469 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:37:43.484 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:37:47.359 INFO: 192.168.2.2 closed connection to device
+- 16:38:43.156 INFO: 192.168.2.2 opened connection to device
+- 16:38:43.172 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:38:43.172 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:38:44.484 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:38:44.484 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:38:48.344 INFO: 192.168.2.2 closed connection to device
+- 16:42:28.953 INFO: 192.168.2.2 opened connection to device
+- 16:42:28.969 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:42:28.984 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:42:29.328 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:42:29.328 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:43:19.281 INFO: 192.168.2.2 closed connection to device
+- 16:47:42.313 INFO: 192.168.2.2 opened connection to device
+- 16:47:42.328 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:47:42.359 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:47:42.719 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:47:42.719 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:48:53.563 INFO: 192.168.2.2 closed connection to device
+- 16:53:50.906 INFO: 192.168.2.2 opened connection to device
+- 16:53:50.953 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:53:50.984 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:53:51.422 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:53:51.422 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:53:57.391 INFO: 192.168.2.2 closed connection to device
+- 16:54:03.594 INFO: 192.168.2.2 opened connection to device
+- 16:54:03.625 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:54:03.625 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:54:03.969 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:54:03.969 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:54:17.828 INFO: 192.168.2.2 closed connection to device
+- 16:55:09.781 INFO: 192.168.2.2 opened connection to device
+- 16:55:09.797 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:55:09.828 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:55:09.156 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:55:09.156 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:56:20.172 INFO: 192.168.2.2 closed connection to device
+- 16:59:44.906 INFO: 192.168.2.2 opened connection to device
+- 16:59:44.938 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:59:44.969 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 16:59:45.375 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 16:59:45.375 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 17:00:55.906 INFO: 192.168.2.2 closed connection to device
+- 17:04:24.125 INFO: 192.168.2.2 opened connection to device
+- 17:04:24.156 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 17:04:25.188 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 17:04:25.578 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 17:04:25.578 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 17:05:35.281 INFO: 192.168.2.2 closed connection to device
+- 17:24:32.109 INFO: 192.168.2.2 opened connection to device
+- 17:24:32.141 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 17:24:33.172 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 17:24:33.531 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 17:24:33.531 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 17:25:43.641 INFO: 192.168.2.2 closed connection to device
+- 17:28:09.047 INFO: 192.168.2.2 opened connection to device
+- 17:28:09.063 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 17:28:09.172 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 17:28:10.594 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 17:28:10.594 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 17:28:30.688 INFO: 192.168.2.2 closed connection to device
+- 13:31:04.922 INFO: 192.168.2.2 opened connection to device
+- 13:31:04.953 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:31:04.984 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:31:05.359 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:31:05.359 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:31:17.688 INFO: 192.168.2.2 closed connection to device
+- 13:31:36.266 INFO: 192.168.2.2 opened connection to device
+- 13:31:36.281 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:31:36.281 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:31:36.594 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:31:36.594 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:32:47.953 INFO: 192.168.2.2 closed connection to device
+- 13:33:47.469 INFO: 192.168.2.2 opened connection to device
+- 13:33:47.484 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:33:47.500 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:33:47.828 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:33:47.828 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:34:35.938 INFO: 192.168.2.2 closed connection to device
+- 13:34:39.406 INFO: 192.168.2.2 opened connection to device
+- 13:34:39.422 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:34:39.438 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:34:39.750 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:34:39.750 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:34:55.266 INFO: 192.168.2.2 closed connection to device
+- 13:35:29.297 INFO: 192.168.2.2 opened connection to device
+- 13:35:29.313 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/MEAS/MEAS-APS21.h5
+- 13:35:29.313 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:35:29.641 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/MEAS/MEAS-APS21.h5
+- 13:35:29.641 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:35:34.781 INFO: 192.168.2.2 closed connection to device
+- 13:35:44.359 INFO: 192.168.2.2 opened connection to device
+- 13:35:44.375 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:35:44.375 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:35:44.672 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:35:44.688 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:36:53.906 INFO: 192.168.2.2 closed connection to device
+- 13:39:03.313 INFO: 192.168.2.2 opened connection to device
+- 13:39:03.328 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:39:03.328 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:39:03.656 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:39:03.656 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:39:20.000 INFO: 192.168.2.2 closed connection to device
+- 13:39:26.641 INFO: 192.168.2.2 opened connection to device
+- 13:39:26.656 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:39:26.656 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:39:26.969 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:39:26.969 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:39:32.469 INFO: 192.168.2.2 closed connection to device
+- 13:39:39.125 INFO: 192.168.2.2 opened connection to device
+- 13:39:39.125 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:39:39.125 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:39:40.453 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:39:40.453 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:39:44.641 INFO: 192.168.2.2 closed connection to device
+- 13:40:39.266 INFO: 192.168.2.2 opened connection to device
+- 13:40:39.281 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:40:39.281 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:40:39.563 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:40:39.563 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:40:48.109 INFO: 192.168.2.2 closed connection to device
+- 13:40:50.656 INFO: 192.168.2.2 opened connection to device
+- 13:40:50.672 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:40:50.688 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:40:50.953 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:40:50.953 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:41:49.547 INFO: 192.168.2.2 closed connection to device
+- 13:41:51.531 INFO: 192.168.2.2 opened connection to device
+- 13:41:51.547 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:41:51.547 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:41:51.844 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:41:51.844 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:43:01.453 INFO: 192.168.2.2 closed connection to device
+- 13:44:30.234 INFO: 192.168.2.2 opened connection to device
+- 13:44:30.250 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:44:30.250 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:44:30.594 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 13:44:30.594 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 13:45:41.719 INFO: 192.168.2.2 closed connection to device
+- 13:56:47.094 INFO: 192.168.2.2 opened connection to device
+- 13:58:44.813 INFO: 192.168.2.2 closed connection to device
+- 14:01:47.563 INFO: 192.168.2.2 opened connection to device
+- 14:05:26.969 INFO: 192.168.2.2 closed connection to device
+- 14:05:32.141 INFO: 192.168.2.2 opened connection to device
+- 14:10:34.344 INFO: 192.168.2.2 closed connection to device
+- 14:10:51.969 INFO: 192.168.2.2 opened connection to device
+- 14:13:55.703 INFO: 192.168.2.2 closed connection to device
+- 14:16:13.328 INFO: 192.168.2.2 opened connection to device
+- 14:16:13.328 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 14:16:13.328 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 14:16:13.391 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 14:16:13.391 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 14:16:13.688 INFO: 192.168.2.2 closed connection to device
+- 14:16:35.578 INFO: 192.168.2.2 opened connection to device
+- 14:16:35.578 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 14:16:35.594 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 14:16:35.656 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 14:16:35.672 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 14:16:41.859 INFO: 192.168.2.2 closed connection to device
+- 14:20:58.063 INFO: 192.168.2.2 opened connection to device
+- 14:20:58.063 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 14:20:58.078 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 14:20:58.141 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 14:20:58.141 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 14:22:07.141 INFO: 192.168.2.2 closed connection to device
+- 14:23:54.438 INFO: 192.168.2.2 opened connection to device
+- 14:23:54.453 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 14:23:54.453 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 14:23:54.500 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 14:23:54.500 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 14:24:55.578 INFO: 192.168.2.2 closed connection to device
+- 14:25:25.969 INFO: 192.168.2.2 opened connection to device
+- 14:25:25.969 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 14:25:25.984 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 14:25:25.031 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 14:25:25.031 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 14:26:26.781 INFO: 192.168.2.2 closed connection to device
+- 14:27:08.797 INFO: 192.168.2.2 opened connection to device
+- 14:27:08.813 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 14:27:08.813 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 14:27:08.891 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 14:27:08.891 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 14:28:09.641 INFO: 192.168.2.2 closed connection to device
+- 14:34:23.750 INFO: 192.168.2.2 opened connection to device
+- 14:40:11.875 INFO: 192.168.2.2 closed connection to device
+- 14:41:28.641 INFO: 192.168.2.2 opened connection to device
+- 14:41:28.641 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 14:41:28.656 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 14:41:28.719 INFO: 192.168.2.2 opening sequence file: Z:/Experiments/DR2/pyqlab-config/AWG/Cavity/Cavity-APS21.h5
+- 14:41:28.734 INFO: 192.168.2.2 clearing all channel data for APS2 192.168.2.2
+- 14:42:29.844 INFO: 192.168.2.2 closed connection to device
+- 14:50:34.547 INFO: 192.168.2.2 opened connection to device
+- 15:08:46.953 INFO: 192.168.2.2 closed connection to device
+- 15:09:09.891 INFO: 192.168.2.2 opened connection to device
+- 15:14:35.078 INFO: 192.168.2.2 closed connection to device
+- 15:15:28.938 ERROR: Failed to create ethernet interface.
+- 15:18:38.766 ERROR: Failed to create ethernet interface.

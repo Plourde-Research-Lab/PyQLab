@@ -14,7 +14,7 @@ class MeasFilter(Atom):
     label = Str()
     enabled = Bool(True)
     plotScope = Bool(False).tag(desc='Whether to show the raw data scope.')
-    plotMode = Enum('amp/phase', 'real/imag', 'quad').tag(desc='Filtered data scope mode.')
+    plotMode = Enum('amp/phase', 'real/imag', 'quad', 'data').tag(desc='Filtered data scope mode.')
     saved = Bool(True).tag(desc='Whether the filtered values should be saved to file.')
     dataSource = Str().tag(desc="Where the measurement data is pushed from.")
 
@@ -115,7 +115,6 @@ class KernelIntegration(MeasFilter):
             jsonDict['kernel'] = kernel
         return jsonDict
 
-
 class Correlator(MeasFilter):
     filters = List()
 
@@ -136,6 +135,12 @@ class StateComparator(MeasFilter):
     threshold = Float(0.0)
     integrationTime = Int(-1).tag(desc='Comparator integration time in decimated samples, use -1 for the entire record')
 
+class ComplexStateComparator(MeasFilter):
+    state1I = Float(0.0).tag(desc='Real mean of State 1')
+    state1Q = Float(0.0).tag(desc='Imaginary mean of State 1')
+    state2I = Float(0.0).tag(desc='Real mean of State 2')
+    state2Q = Float(0.0).tag(desc='Imaginary mean of State 2')
+
 class StreamSelector(MeasFilter):
     stream = Str()
     saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
@@ -148,9 +153,6 @@ class CounterStream(CounterMeasFilter):
     saveRecords = Bool(True).tag(desc='Whether to save the single-shot records to file.')
     recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
     plotMode = Str('normal')
-
-class SwitchingProbabilityStream(DigitalMeasFilter):
-    pass
 
 class MeasFilterLibrary(Atom):
     # filterDict = Dict(Str, MeasFilter)
@@ -204,7 +206,7 @@ class MeasFilterLibrary(Atom):
             }
 
 
-measFilterList = [RawStream, DigitalDemod, KernelIntegration, Correlator, StateComparator, StreamSelector, CounterStream, SwitchingProbabilityStream]
+measFilterList = [RawStream, DigitalDemod, KernelIntegration, Correlator, StateComparator, StreamSelector, ComplexStateComparator]
 
 
 if __name__ == "__main__":

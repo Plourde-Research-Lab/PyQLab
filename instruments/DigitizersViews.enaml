@@ -67,13 +67,6 @@ enamldef AlazarView(GroupBox):
 					EnumComboBox:
 						obj := instr
 						enumName = 'acquireMode'
-					Conditional:
-						condition << instr.acquireMode == 'thresholder'
-						Label:
-							text = 'Threshold'
-						FloatField:
-							value := instr.threshold
-							tool_tip = instr.get_member('threshold').metadata['desc']
 					Label:
 						text = 'Trigger Delay:'
 					FloatField:
@@ -161,6 +154,7 @@ enamldef AlazarView(GroupBox):
 
 enamldef AgilentAP240View(GroupBox):
 	attr instr
+	attr instrumentLib
 	title = '{} ({})'.format(instr.label, instr.__class__.__name__)
 	ScrollArea:
 		Container:
