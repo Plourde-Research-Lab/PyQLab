@@ -83,6 +83,43 @@ enamldef AttenuationSweepForm(GroupBox):
             obj := sweep
             intName = 'channel'
 
+enamldef DCSweepForm(GroupBox):
+    attr sweep
+    attr possibleInstrs
+    title := '{} ({})'.format(sweep.label, sweep.__class__.__name__)
+    Form:
+        Label:
+            text = 'Axis Label'
+        Field:
+            text := sweep.axisLabel
+        Label:
+            text = 'Start'
+        FloatField:
+            value := sweep.start
+        Label:
+            text = 'Stop'
+        FloatField:
+            value := sweep.stop
+        Label:
+            text = 'Step'
+        FloatField:
+            value := sweep.step
+        Label:
+            text = 'Num. Points'
+        IntField:
+            value := sweep.numPoints
+        Label:
+            text = 'Instrument'
+        ComboBox:
+            index << possibleInstrs.index(sweep.instr) if (possibleInstrs and sweep.instr) else 0
+            index :: sweep.instr = possibleInstrs[index]
+            items << [item for item in possibleInstrs]
+        Label:
+            text = 'Channel'
+        EnumIntComboBox:
+            obj := sweep
+            intName = 'channel'
+
 enamldef SegmentNumForm(GroupBox):
     attr sweep
     attr possibleInstrs
@@ -393,18 +430,18 @@ enamldef PulseSweepForm(GroupBox):
             text = 'Num. Points'
         IntField:
             value := sweep.numPoints
-        Label: 
+        Label:
             text = 'Instrument'
         ComboBox:
             index << possibleInstrs.index(sweep.instr) if (possibleInstrs and sweep.instr) else 0
             index :: sweep.instr = possibleInstrs[index]
             items << [item for item in possibleInstrs]
-        Label: 
+        Label:
             text = 'Mode'
         EnumComboBox:
             items = ['amp', 'width']
             obj := sweep
-            enumName = 'mode'         
+            enumName = 'mode'
 
 enamldef EmptySweepForm(Container):
     attr sweep
@@ -419,7 +456,7 @@ sweepViewMap = {type(None):EmptySweepForm, Sweeps.PointsSweep:PointsSweepForm,
                     Sweeps.Attenuation:AttenuationSweepForm,
                     Sweeps.Power:PowerSweepForm,
                     Sweeps.Repeat:RepeatForm,
-                    Sweeps.DC:PointsSweepForm,
+                    Sweeps.DC:DCSweepForm,
                     Sweeps.HeterodyneFrequency:HeterodyneSweepForm,
                     Sweeps.Threshold:ThresholdSweepForm,
                     Sweeps.Pulse:PulseSweepForm}

@@ -70,6 +70,8 @@ class DigitalDemod(MeasFilter):
     decimFactor3 = Int(1).tag(desc="Third stage polyphase decimation (after IIR filter).")
 
 class KernelIntegration(MeasFilter):
+    saveRecords = Bool(False).tag(desc='Whether to save the single-shot records to file.')
+    recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
     kernel = Str('').tag(desc="Integration kernel vector.")
     bias = Float(0.0).tag(desc="Bias after integration.")
     simpleKernel = Bool(True)
@@ -98,7 +100,7 @@ class KernelIntegration(MeasFilter):
             jsonDict['kernel'] = kernel
         return jsonDict
 
-    
+
 class Correlator(MeasFilter):
     filters = List()
 
