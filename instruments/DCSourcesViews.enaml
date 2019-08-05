@@ -59,15 +59,40 @@ enamldef SIM928Form(GroupBox):
 			value := instr.ch1Value
 			tool_tip = instr.get_member('ch1Value').metadata['desc']
 		Label:
+			text = 'Ch1 Res'
+		FloatField:
+			value := instr.ch1Res
+			tool_tip = instr.get_member('ch1Res').metadata['desc']
+		Label:
 			text = 'Ch2 Value'
 		FloatField:
 			value := instr.ch2Value
 			tool_tip = instr.get_member('ch2Value').metadata['desc']
 		Label:
+			text = 'Ch2 Res'
+		FloatField:
+			value := instr.ch2Res
+			tool_tip = instr.get_member('ch2Res').metadata['desc']
+		Label:
 			text = 'Ch3 Value'
 		FloatField:
 			value := instr.ch3Value
 			tool_tip = instr.get_member('ch3Value').metadata['desc']
+		Label:
+			text = 'Ch3 Res'
+		FloatField:
+			value := instr.ch3Res
+			tool_tip = instr.get_member('ch3Res').metadata['desc']
+		Label:
+			text = 'Ch4 Value'
+		FloatField:
+			value := instr.ch4Value
+			tool_tip = instr.get_member('ch4Value').metadata['desc']
+		Label:
+			text = 'Ch4 Res'
+		FloatField:
+			value := instr.ch4Res
+			tool_tip = instr.get_member('ch4Res').metadata['desc']
 
 enamldef TekAFG3022BForm(GroupBox):
 	attr instr

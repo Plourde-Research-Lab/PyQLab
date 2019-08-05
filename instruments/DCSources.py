@@ -17,9 +17,14 @@ class YokoGS200(DCSource):
 		return jsonDict
 
 class SIM928(Instrument):
-	ch1Value = Float(0.0).tag(desc="Ch 1 Voltage (V)")
-	ch2Value = Float(0.0).tag(desc="Ch 2 Voltage (V)")
-	ch3Value = Float(0.0).tag(desc="Ch 3 Voltage (V)")
+	ch1Value = Float(0.0).tag(desc="Ch 1 Current (mA)")
+	ch1Res   = Float(2e3).tag(desc="Ch 1 Source Resistance (Ohm)")
+	ch2Value = Float(0.0).tag(desc="Ch 2 Current (mA)")
+	ch2Res   = Float(2e3).tag(desc="Ch 2 Source Resistance (Ohm)")
+	ch3Value = Float(0.0).tag(desc="Ch 3 Current (mA)")
+	ch3Res   = Float(2e3).tag(desc="Ch 3 Source Resistance (Ohm)")
+	ch4Value = Float(0.0).tag(desc="Ch 4 Current (mA)")
+	ch4Res   = Float(2e3).tag(desc="Ch 4 Source Resistance (Ohm)")
 
 class TekAFG3022B(DCSource):
 	outputRange = Enum(1e-3, 10e-3, 100e-3, 200e-3, 1.0, 10.0, 20.0).tag(desc='Output range')

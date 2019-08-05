@@ -187,8 +187,40 @@ enamldef KernelIntegrationForm(GroupBox):
             checked := myFilter.saveRecords
             tool_tip = myFilter.get_member('saveRecords').metadata['desc']
 
+enamldef AveragerForm(GroupBox):
+    attr myFilter
+    attr filterLib
+    title := '{} ({})'.format(myFilter.label, myFilter.__class__.__name__)
+    Form:
+        Label:
+            text = "Data source"
+        Field:
+            text := myFilter.dataSource
+        Label:
+            text = 'Bias'
+        FloatField:
+            value := myFilter.bias
+            tool_tip = myFilter.get_member('bias').metadata["desc"]
+        Label:
+            text = 'Gain'
+        FloatField:
+            value := myFilter.gain
+            tool_tip = myFilter.get_member('gain').metadata["desc"]
+        Label:
+            text = "Plot scope"
+        CheckBox:
+            checked := myFilter.plotScope
+        Label:
+            text = "Plot mode"
+        EnumComboBox:
+            obj := myFilter
+            enumName = 'plotMode'
+
+
 def filterLooperGetIndex(items, myFilter, loop_index):
-    if loop_index < len(myFilter.filters) and \
+    if myFilter.filters[loop_index] is None:  # this line added to prevent an error when myfilter.filters is None. Jaseung Ku
+      return -1
+    elif loop_index < len(myFilter.filters) and \
         myFilter.filters[loop_index].label in items:
         return items.index(myFilter.filters[loop_index].label)
     else:
@@ -207,7 +239,7 @@ enamldef CorrelatorView(GroupBox):
         Looper: filterLooper:
             iterable << range(numFiltersBox.value)
             iterable ::
-                if len(myFilter.filters) > len(iterable):
+                if len(myFilter.filters) >= len(iterable):
                     myFilter.filters = myFilter.filters[:numFiltersBox.value]
                 elif len(myFilter.filters) < len(iterable):
                     myFilter.filters += [None]
@@ -216,9 +248,10 @@ enamldef CorrelatorView(GroupBox):
                     text = 'Filter {}:'.format(loop_index+1)
                 ComboBox:
                     items << list(filterLib.filterDict.keys())
-                    index << filterLooperGetIndex(items, myFilter, loop_index)
+                  #  index << filterLooperGetIndex(items, myFilter, loop_index)  # Commenting out solved the crash of GUI when clicking correlator.
                     index ::
                         myFilter.filters[loop_index] = filterLib.filterDict[selected_item]
+                    index << filterLooperGetIndex(items, myFilter, loop_index)
         Label:
             text = "Plot mode"
         EnumComboBox:
@@ -346,7 +379,8 @@ filterViewMap = {type(None): EmptyMeasFilterForm,
     MeasFilters.Correlator: CorrelatorView,
     MeasFilters.StateComparator: StateComparatorView,
     MeasFilters.StreamSelector: StreamSelectorView,
-    MeasFilters.CounterStream: CounterStreamView}
+    MeasFilters.CounterStream: CounterStreamView,
+    MeasFilters.Averager: AveragerForm}
 
 enamldef MeasFilterManager(Container): measFilterManager:
     attr filterLib

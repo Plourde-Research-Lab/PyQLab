@@ -14,7 +14,7 @@ class MeasFilter(Atom):
     label = Str()
     enabled = Bool(True)
     plotScope = Bool(False).tag(desc='Whether to show the raw data scope.')
-    plotMode = Enum('amp/phase', 'real/imag', 'quad').tag(desc='Filtered data scope mode.')
+    plotMode = Enum('amp/phase', 'real/imag', 'quad', 'real').tag(desc='Filtered data scope mode.')
     saved = Bool(True).tag(desc='Whether the filtered values should be saved to file.')
     dataSource = Str().tag(desc="Where the measurement data is pushed from.")
 
@@ -134,6 +134,10 @@ class CounterStream(CounterMeasFilter):
     recordsFilePath = Str('').tag(desc='Path to file where records will be optionally saved.')
     plotMode = Str('normal')
 
+class Averager(MeasFilter):
+    bias = Float(0.0).tag(desc="Bias after integration.")
+    gain = Float(1e3).tag(desc="Voltage gain before digitizer")
+
 class MeasFilterLibrary(Atom):
     # filterDict = Dict(Str, MeasFilter)
     filterDict = Coerced(dict)
@@ -186,7 +190,7 @@ class MeasFilterLibrary(Atom):
             }
 
 
-measFilterList = [RawStream, DigitalDemod, KernelIntegration, Correlator, StateComparator, StreamSelector, CounterStream]
+measFilterList = [RawStream, DigitalDemod, KernelIntegration, Correlator, StateComparator, StreamSelector, Averager]
 
 
 if __name__ == "__main__":
